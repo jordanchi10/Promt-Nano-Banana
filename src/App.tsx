@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { GoogleGenAI } from '@google/genai';
+import { useState, useEffect } from 'react';
 import { 
   Sparkles, Copy, Check, Loader2, ArrowRight, Clock, ChevronDown,
   Award, Camera, Smartphone, ZoomIn, Scale, ArrowRightLeft, 
@@ -83,8 +82,26 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
+    const savedHistory = localStorage.getItem('prompt_history');
+    if (savedHistory) {
+      try {
+        const parsed = JSON.parse(savedHistory);
+        return parsed.map((item: any) => ({
+          ...item,
+          timestamp: new Date(item.timestamp),
+        }));
+      } catch (e) {
+        console.error("Error loading history", e);
+      }
+    }
+    return [];
+  });
   const [activeTab, setActiveTab] = useState<'current' | 'history'>('current');
+
+  useEffect(() => {
+    localStorage.setItem('prompt_history', JSON.stringify(history));
+  }, [history]);
 
   const handleGenerate = async () => {
     playClickSound();
@@ -97,71 +114,39 @@ export default function App() {
     setIsGenerating(true);
     setGeneratedPrompt('');
 
-    try {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-         throw new Error("GEMINI_API_KEY no encontrada");
-      }
-      
-      const ai = new GoogleGenAI({ apiKey });
+    // Simulate network delay for effect
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-      const promptSystem = `Actúa como un Director de Arte y Experto en Ingeniería de Prompts para el modelo de generación de imágenes Nano Banana 2. Tu objetivo es crear prompts en inglés (optimizados para IA) para generar flyers y anuncios digitales de alta conversión.
+    const selectedAngle = ANGLES.find(a => a.label === angle);
+    
+    // Construct prompt locally based on selections
+    const prompt = `Professional digital advertisement for a ${product}. 
+    
+Composition Strategy: ${selectedAngle?.label || angle} shot. ${selectedAngle?.description || ''}
+Visual Style & Environment: ${style}
+Typography & Graphic Overlay: text overlay: "${typography}".
 
-Voy a proporcionarte 4 variables:
-1. ÁNGULO DE VENTA: ${angle}
-2. PRODUCTO/SERVICIO: ${product}
-3. ESTILO VISUAL Y ENTORNO: ${style}
-4. DISEÑO DE TÍTULOS/TIPOGRAFÍA: ${typography}
+Technical Specifications: 
+- High-conversion social media advertisement layout.
+- Hyper-detailed image quality with professional lighting and textures.
+- Clear visual hierarchy with appropriate negative space for CTA placement.
+- IMPORTANT: All text overlay elements must be rendered in Spanish: "${typography}". 
+- Optimized for modern AI image synthesis, high-impact branding. --v 6.0 --ar 4:5 --style raw`;
 
-Con esa información, debes devolverme ÚNICAMENTE la cadena de texto con el prompt final estructurado bajo esta fórmula:
-[Tipo de Imagen] + [Sujeto principal y Ángulo de Venta] + [Entorno y Composición] + [Iluminación y Texturas] + [Requisitos de Texto Superpuesto/Tipografía].
-
-Reglas para el prompt resultante:
-- Debe ser hiper-detallado.
-- Si el ángulo es "Antes vs Después" o "Problema vs Solución", describe una composición de pantalla dividida (split-screen).
-- Si hay texto, indica explícitamente "Text overlay: 'EL TEXTO'" y especifica el estilo tipográfico (ej. Modern Grotesk, bold).
-- CRÍTICO: Aunque el prompt que generes debe estar redactado en inglés, cualquier texto literal para el diseño ('Text overlay') DEBE ESTAR SIEMPRE EN ESPAÑOL. No traduzcas los títulos, botones ni textos al inglés.
-- Mantén el diseño pensado para redes sociales (espacio negativo para botones CTA y copy).
-- DEVUELVE ÚNICAMENTE EL TEXTO EN INGLÉS DEL PROMPT. NADA DE SALUDOS NI CONFIRMACIONES. NI MARkDOWN DE BLOQUE DE CÓDIGO SIQUIERA, SÓLO EL TEXTO PURO.`;
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: promptSystem,
-      });
-
-      let rawText = response.text?.trim() || '';
-      rawText = rawText.replace(/^```[a-zA-Z]*[\r\n]+/, '').replace(/[\r\n]+```$/, '').trim();
-      // fallback in case it outputs inline backticks
-      if (rawText.startsWith('```') && rawText.endsWith('```')) {
-        rawText = rawText.slice(3, -3).trim();
-      }
-
-      setGeneratedPrompt(rawText);
-      setActiveTab('current');
-      
-      const newHistoryItem: HistoryItem = {
-        id: crypto.randomUUID(),
-        angle,
-        product,
-        style,
-        typography,
-        prompt: rawText,
-        timestamp: new Date()
-      };
-      setHistory(prev => [newHistoryItem, ...prev]);
-    } catch (err: any) {
-      const errorMessage = typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err);
-      
-      if (errorMessage.includes('429') || errorMessage.includes('RESOURCE_EXHAUSTED')) {
-        console.warn('Cuota de uso excedida (429).');
-        setError('¡Has excedido temporalmente la cuota de uso! Por favor, espera unos minutos e inténtalo de nuevo.');
-      } else {
-        console.error('Error durante la generación:', err);
-        setError('Hubo un error al generar el prompt. Inténtalo más tarde.');
-      }
-    } finally {
-      setIsGenerating(false);
-    }
+    setGeneratedPrompt(prompt);
+    setActiveTab('current');
+    
+    const newHistoryItem: HistoryItem = {
+      id: crypto.randomUUID(),
+      angle,
+      product,
+      style,
+      typography,
+      prompt: prompt,
+      timestamp: new Date()
+    };
+    setHistory(prev => [newHistoryItem, ...prev]);
+    setIsGenerating(false);
   };
 
   const copyToClipboard = async () => {
@@ -193,8 +178,9 @@ Reglas para el prompt resultante:
        {/* Controls Panel (Workbench) */}
         <div className="bg-theme-paper p-[25px] rounded-[4px] shadow-[10px_10px_0px_rgba(0,0,0,0.05)] border border-[#ddd]">
           {error && <p className="text-red-500 text-sm mb-4 text-center font-bold bg-white/50 p-2 rounded">{error}</p>}
-          <div className="mb-[25px]">
-            <span className="text-[11px] font-bold uppercase tracking-[1px] mb-[15px] block text-theme-accent">
+          <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm">
+            <span className="text-base font-bold uppercase tracking-[1px] mb-[15px] block text-theme-ink flex items-center">
+              <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
               A. Ángulo de Venta
             </span>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
@@ -208,22 +194,25 @@ Reglas para el prompt resultante:
                         setAngle(a.label);
                     }}
                     title={a.description}
-                    className={`p-3 text-[10px] border flex flex-col items-center justify-center space-y-2 cursor-pointer transition ${angle === a.label ? 'bg-theme-ink text-theme-bg border-theme-ink shadow-sm' : 'bg-transparent text-theme-ink border-[#ccc] hover:bg-black/5'}`}
+                    className={`p-4 text-xs border flex flex-col items-center justify-center space-y-2 cursor-pointer transition ${angle === a.label ? 'bg-theme-ink text-theme-bg border-theme-ink shadow-sm' : 'bg-transparent text-theme-ink border-[#ccc] hover:bg-black/5'}`}
                   >
-                    <Icon className={`w-5 h-5 ${angle === a.label ? 'opacity-100 text-theme-accent' : 'opacity-60 text-theme-ink'}`} />
-                    <span className="text-center font-medium">[{a.label}]</span>
+                    <Icon className={`w-6 h-6 ${angle === a.label ? 'opacity-100 text-theme-accent' : 'opacity-60 text-theme-ink'}`} />
+                    <span className="text-center font-medium">[ {a.label} ]</span>
                   </button>
                 );
               })}
             </div>
-            <p className="text-theme-muted text-[11px] mt-2 italic font-serif">
-              {ANGLES.find(a => a.label === angle)?.description}
-            </p>
+            <div className="bg-[#f4f4f4] border-l-4 border-theme-accent p-4 mt-3 rounded-r-md">
+              <p className="text-theme-ink text-sm italic font-serif leading-relaxed">
+                {ANGLES.find(a => a.label === angle)?.description}
+              </p>
+            </div>
           </div>
 
           {/* Step 2 */}
-          <div className="mb-[25px]">
-            <span className="text-[11px] font-bold uppercase tracking-[1px] mb-[15px] block text-theme-accent">
+          <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm">
+            <span className="text-base font-bold uppercase tracking-[1px] mb-[15px] block text-theme-ink flex items-center">
+              <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
               B. Producto o Servicio
             </span>
             <input
@@ -236,8 +225,9 @@ Reglas para el prompt resultante:
           </div>
 
           {/* Step 3 */}
-          <div className="mb-[25px]">
-            <span className="text-[11px] font-bold uppercase tracking-[1px] mb-[10px] block text-theme-accent">
+          <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm">
+            <span className="text-base font-bold uppercase tracking-[1px] mb-[10px] block text-theme-ink flex items-center">
+              <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
               C. Estilo Visual y Entorno
             </span>
             <div className="flex flex-wrap gap-2 mb-[10px]">
@@ -254,7 +244,7 @@ Reglas para el prompt resultante:
                       setStyle(prev => prev ? `${prev}, ${preset.value}` : preset.value);
                     }
                   }}
-                  className={`px-2 py-1 text-[9px] uppercase tracking-[1px] border transition cursor-pointer ${selectedStylePresets.includes(preset.label) ? 'bg-theme-ink text-white border-theme-ink' : 'border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white'}`}
+                  className={`px-4 py-2 text-xs uppercase tracking-[1px] border transition cursor-pointer ${selectedStylePresets.includes(preset.label) ? 'bg-theme-ink text-white border-theme-ink' : 'border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white'}`}
                   title={preset.value}
                 >
                   + {preset.label}
@@ -275,8 +265,9 @@ Reglas para el prompt resultante:
           </div>
 
           {/* Step 4 */}
-          <div className="mb-[25px]">
-            <span className="text-[11px] font-bold uppercase tracking-[1px] mb-[10px] block text-theme-accent">
+          <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm">
+            <span className="text-base font-bold uppercase tracking-[1px] mb-[10px] block text-theme-ink flex items-center">
+              <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
               D. Diseño de Títulos y Tipografía
             </span>
             <div className="flex flex-wrap gap-2 mb-[10px]">
@@ -293,7 +284,7 @@ Reglas para el prompt resultante:
                       setTypography(prev => prev ? `${prev}, ${preset.value}` : preset.value);
                     }
                   }}
-                  className={`px-2 py-1 text-[9px] uppercase tracking-[1px] border transition cursor-pointer ${selectedTypographyPresets.includes(preset.label) ? 'bg-theme-ink text-white border-theme-ink' : 'border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white'}`}
+                  className={`px-4 py-2 text-xs uppercase tracking-[1px] border transition cursor-pointer ${selectedTypographyPresets.includes(preset.label) ? 'bg-theme-ink text-white border-theme-ink' : 'border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white'}`}
                   title={preset.value}
                 >
                   + {preset.label}
