@@ -1,0 +1,469 @@
+import { useState } from 'react';
+import { GoogleGenAI } from '@google/genai';
+import { 
+  Sparkles, Copy, Check, Loader2, ArrowRight, Clock, ChevronDown,
+  Award, Camera, Smartphone, ZoomIn, Scale, ArrowRightLeft, 
+  ThumbsUp, Flame, Network, Key, LayoutGrid, PackageOpen, 
+  Hammer, Zap, Sun
+} from 'lucide-react';
+
+interface HistoryItem {
+  id: string;
+  angle: string;
+  product: string;
+  style: string;
+  typography: string;
+  prompt: string;
+  timestamp: Date;
+}
+
+const ANGLES = [
+  { id: 'hero', icon: Award, label: 'Hero Image / Glamour Shot', description: 'Producto glorificado en el centro, impacto visual, minimalista y limpio' },
+  { id: 'lifestyle_premium', icon: Camera, label: 'Lifestyle Premium', description: 'Contexto aspiracional, entorno de alta gama, uso en la vida real ideal' },
+  { id: 'ugc_organico', icon: Smartphone, label: 'UGC / Estilo Orgánico', description: 'Foto estilo celular, selfie o POV. Auténtica, sin filtro de estudio, relatable' },
+  { id: 'macro_sensorial', icon: ZoomIn, label: 'Macro Sensorial', description: 'Acercamiento extremo (texturas, gotas, detalles) que evoca sensaciones físicas' },
+  { id: 'nosotros_vs_ellos', icon: Scale, label: 'Nosotros vs Ellos', description: 'Diseño de contraste agresivo: nuestro producto innovador vs la competencia obsoleta' },
+  { id: 'antes_despues', icon: ArrowRightLeft, label: 'Antes vs Después (Resultados)', description: 'Composición dividida (split-screen) que evidencia una transformación clara' },
+  { id: 'prueba_social', icon: ThumbsUp, label: 'Prueba Social (Social Proof)', description: 'Personas satisfechas junto a elementos de confianza: 5 estrellas, sellos o reseñas' },
+  { id: 'urgencia_escasez', icon: Flame, label: 'Urgencia / FOMO (Flash Sale)', description: 'Diseño agresivo, colores de alerta, sensación inminente de oferta por tiempo limitado' },
+  { id: 'anatomia_infografia', icon: Network, label: 'Anatomía del Producto', description: 'Despiece espacial del producto listo para recibir flechas texturizadas o viñetas técnicas' },
+  { id: 'secreto_revelado', icon: Key, label: 'El Secreto / El Hack', description: 'El producto presentado como un descubrimiento oculto o el "ingrediente mágico"' },
+  { id: 'flatlay_estetico', icon: LayoutGrid, label: 'Flatlay Estético (Vista Cenital)', description: 'Organización impecable desde arriba, rodeando el producto de sus complementos' },
+  { id: 'unboxing_experiencia', icon: PackageOpen, label: 'Experiencia Unboxing', description: 'Momento de desempaquetado con perspectiva en primera persona (P.O.V.)' },
+  { id: 'detras_escena', icon: Hammer, label: 'Detrás de Escena (Craftsmanship)', description: 'Muestra artesanía, elaboración, taller o manos expertas operando el servicio/producto' },
+  { id: 'problema_agitado', icon: Zap, label: 'Agitar el Problema', description: 'Identifica una frustración intensa, colores dramáticos o expresión de estrés' },
+  { id: 'climax_alivio', icon: Sun, label: 'Clímax y Alivio', description: 'El resplandor cálido posterior: el exacto instante en que el producto detiene el dolor' },
+];
+
+const STYLE_PRESETS = [
+  { label: 'Cinematográfico', value: 'Cinematic lighting, dramatic shadows, 8k resolution, highly detailed volumetric lighting' },
+  { label: 'Minimalista', value: 'Minimalist, clean background, negative space, soft studio lighting, Apple style presentation' },
+  { label: 'Vibrante / Pop', value: 'Vibrant neon colors, highly saturated, vivid, energetic lighting, pop-art infused' },
+  { label: 'Editorial / Vogue', value: 'Editorial photography, Vogue style, high fashion, softbox lighting, magazine cover aesthetic' },
+  { label: 'Glow Oscuro', value: 'Dark mode ambiance, low-key lighting, subtle rim light highlighting edges, moody' },
+  { label: 'Aesthetic Natural', value: 'Earthy tones, golden hour sunlight, organic textures, warm atmosphere, linen and wood elements' },
+  { label: 'Ciberpunk', value: 'Cyberpunk aesthetic, neon pink and cyan glows, night city environment, futuristic realism' },
+  { label: 'Estudio Brillante', value: 'Bright and airy photo studio, seamless white backdrop, soft diffused flat lighting' },
+  { label: 'Granular Analógico', value: 'Vintage film camera grain, Kodak Portra 400 aesthetic, nostalgic, slight vignette' },
+  { label: 'Humo y Sombras', value: 'Mysterious atmosphere, heavy fog, silhouetted shapes, cinematic rim lighting' },
+];
+
+const TYPOGRAPHY_PRESETS = [
+  { label: 'Gigante y Gruesa', value: 'Massive Modern Grotesk bold sans-serif, screen-filling typography' },
+  { label: 'Lujo / Serif', value: 'Elegant Serif high-end font, gold foil texture, lavish' },
+  { label: 'Neón 3D', value: 'Futuristic neon 3D font, glowing text effect, volumetric light bleed' },
+  { label: 'Escrito a Mano', value: 'Messy handwritten marker font, authentic feel, ink bleed' },
+  { label: 'Vintage 70s', value: 'Vintage 70s chunky retro font, distressed texture' },
+  { label: 'Cristal Esmerilado', value: 'Frosted glassmorphism text overlay, subtle drop shadow, blurred background behind text' },
+  { label: 'Revista de Moda', value: 'Thin elegant editorial serif font, lots of kerning, sophisticated' },
+  { label: 'Urbano / Grafiti', value: 'Gritty street style graffiti font, spray paint texture' }
+];
+
+export default function App() {
+  const [angle, setAngle] = useState(ANGLES[0].label);
+  const [product, setProduct] = useState('');
+  const [style, setStyle] = useState('');
+  const [typography, setTypography] = useState('');
+  
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState('');
+  
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [activeTab, setActiveTab] = useState<'current' | 'history'>('current');
+
+  const handleGenerate = async () => {
+    if (!product || !style || !typography) {
+      setError('Por favor, completa Producto/Servicio, Estilo Visual y Diseño de Títulos.');
+      return;
+    }
+    
+    setError('');
+    setIsGenerating(true);
+    setGeneratedPrompt('');
+
+    try {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+         throw new Error("GEMINI_API_KEY no encontrada");
+      }
+      
+      const ai = new GoogleGenAI({ apiKey });
+
+      const promptSystem = `Actúa como un Director de Arte y Experto en Ingeniería de Prompts para el modelo de generación de imágenes Nano Banana 2. Tu objetivo es crear prompts en inglés (optimizados para IA) para generar flyers y anuncios digitales de alta conversión.
+
+Voy a proporcionarte 4 variables:
+1. ÁNGULO DE VENTA: ${angle}
+2. PRODUCTO/SERVICIO: ${product}
+3. ESTILO VISUAL Y ENTORNO: ${style}
+4. DISEÑO DE TÍTULOS/TIPOGRAFÍA: ${typography}
+
+Con esa información, debes devolverme ÚNICAMENTE la cadena de texto con el prompt final estructurado bajo esta fórmula:
+[Tipo de Imagen] + [Sujeto principal y Ángulo de Venta] + [Entorno y Composición] + [Iluminación y Texturas] + [Requisitos de Texto Superpuesto/Tipografía].
+
+Reglas para el prompt resultante:
+- Debe ser hiper-detallado.
+- Si el ángulo es "Antes vs Después" o "Problema vs Solución", describe una composición de pantalla dividida (split-screen).
+- Si hay texto, indica explícitamente "Text overlay: 'EL TEXTO'" y especifica el estilo tipográfico (ej. Modern Grotesk, bold).
+- CRÍTICO: Aunque el prompt que generes debe estar redactado en inglés, cualquier texto literal para el diseño ('Text overlay') DEBE ESTAR SIEMPRE EN ESPAÑOL. No traduzcas los títulos, botones ni textos al inglés.
+- Mantén el diseño pensado para redes sociales (espacio negativo para botones CTA y copy).
+- DEVUELVE ÚNICAMENTE EL TEXTO EN INGLÉS DEL PROMPT. NADA DE SALUDOS NI CONFIRMACIONES. NI MARkDOWN DE BLOQUE DE CÓDIGO SIQUIERA, SÓLO EL TEXTO PURO.`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-pro-preview",
+        contents: promptSystem,
+      });
+
+      let rawText = response.text?.trim() || '';
+      rawText = rawText.replace(/^```[a-zA-Z]*[\r\n]+/, '').replace(/[\r\n]+```$/, '').trim();
+      // fallback in case it outputs inline backticks
+      if (rawText.startsWith('```') && rawText.endsWith('```')) {
+        rawText = rawText.slice(3, -3).trim();
+      }
+
+      setGeneratedPrompt(rawText);
+      setActiveTab('current');
+      
+      const newHistoryItem: HistoryItem = {
+        id: crypto.randomUUID(),
+        angle,
+        product,
+        style,
+        typography,
+        prompt: rawText,
+        timestamp: new Date()
+      };
+      setHistory(prev => [newHistoryItem, ...prev]);
+    } catch (err) {
+      console.error(err);
+      setError('Hubo un error al generar el prompt. Verifica la consola para más detalles.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const copyToClipboard = async () => {
+    if (!generatedPrompt) return;
+    try {
+      await navigator.clipboard.writeText(generatedPrompt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      // Fallback
+      console.error("Failed to copy", err);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-theme-bg text-theme-ink font-sans p-10 flex flex-col selection:bg-theme-accent/30 selection:text-theme-ink">
+      {/* Header */}
+      <header className="flex justify-between items-end mb-[30px] border-b border-theme-ink pb-2.5">
+        <div className="font-serif italic text-2xl font-light">
+          Sistema Modular de Prompts
+        </div>
+        <div className="text-[10px] uppercase tracking-[2px] text-theme-muted hidden sm:block">
+          Engine: Nano Banana 2 (Gemini Driven)
+        </div>
+      </header>
+
+      <main className="grid grid-cols-1 md:grid-cols-[1fr_1.2fr] gap-10 flex-1">
+        
+        {/* Controls Panel (Workbench) */}
+        <div className="bg-theme-paper p-[25px] rounded-[4px] shadow-[10px_10px_0px_rgba(0,0,0,0.05)] border border-[#ddd]">
+          
+          {/* Step 1 */}
+          <div className="mb-[25px]">
+            <span className="text-[11px] font-bold uppercase tracking-[1px] mb-[15px] block text-theme-accent">
+              A. Ángulo de Venta
+            </span>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+              {ANGLES.map(a => {
+                const Icon = a.icon;
+                return (
+                  <button
+                    key={a.id}
+                    onClick={() => setAngle(a.label)}
+                    title={a.description}
+                    className={`p-3 text-[10px] border flex flex-col items-center justify-center space-y-2 cursor-pointer transition ${angle === a.label ? 'bg-theme-ink text-theme-bg border-theme-ink shadow-sm' : 'bg-transparent text-theme-ink border-[#ccc] hover:bg-black/5'}`}
+                  >
+                    <Icon className={`w-5 h-5 ${angle === a.label ? 'opacity-100 text-theme-accent' : 'opacity-60 text-theme-ink'}`} />
+                    <span className="text-center font-medium">[{a.label}]</span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-theme-muted text-[11px] mt-2 italic font-serif">
+              {ANGLES.find(a => a.label === angle)?.description}
+            </p>
+          </div>
+
+          {/* Step 2 */}
+          <div className="mb-[25px]">
+            <span className="text-[11px] font-bold uppercase tracking-[1px] mb-[15px] block text-theme-accent">
+              B. Producto o Servicio
+            </span>
+            <input
+              type="text"
+              placeholder="Ej. Sombrero fino de Montecristi"
+              value={product}
+              onChange={(e) => setProduct(e.target.value)}
+              className="w-full p-2.5 border border-dashed border-[#ccc] font-serif italic text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa]"
+            />
+          </div>
+
+          {/* Step 3 */}
+          <div className="mb-[25px]">
+            <span className="text-[11px] font-bold uppercase tracking-[1px] mb-[10px] block text-theme-accent">
+              C. Estilo Visual y Entorno
+            </span>
+            <div className="flex flex-wrap gap-2 mb-[10px]">
+              {STYLE_PRESETS.map((preset, index) => (
+                <button
+                  key={index}
+                  onClick={() => setStyle(prev => prev ? `${prev}, ${preset.value}` : preset.value)}
+                  className="px-2 py-1 text-[9px] uppercase tracking-[1px] border border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white transition cursor-pointer"
+                  title={preset.value}
+                >
+                  + {preset.label}
+                </button>
+              ))}
+            </div>
+            <textarea
+              placeholder="Ej. Fotografía editorial, luz de atardecer, grano de película fino. Cinematic lighting, dramatic shadows."
+              rows={3}
+              value={style}
+              onChange={(e) => setStyle(e.target.value)}
+              className="w-full p-2.5 border border-dashed border-[#ccc] font-serif italic text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa] resize-none"
+            />
+            <div className="mt-2 text-[10px] text-theme-muted font-sans leading-relaxed">
+              <strong>Tip:</strong> Puedes combinar los botones de arriba o escribir tus propias especificaciones.<br/>
+              • <em>Ejemplo:</em> "Golden hour glow, volumentric fog, photorealistic"
+            </div>
+          </div>
+
+          {/* Step 4 */}
+          <div className="mb-[25px]">
+            <span className="text-[11px] font-bold uppercase tracking-[1px] mb-[10px] block text-theme-accent">
+              D. Diseño de Títulos y Tipografía
+            </span>
+            <div className="flex flex-wrap gap-2 mb-[10px]">
+              {TYPOGRAPHY_PRESETS.map((preset, index) => (
+                <button
+                  key={index}
+                  onClick={() => setTypography(prev => prev ? `${prev}, ${preset.value}` : preset.value)}
+                  className="px-2 py-1 text-[9px] uppercase tracking-[1px] border border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white transition cursor-pointer"
+                  title={preset.value}
+                >
+                  + {preset.label}
+                </button>
+              ))}
+            </div>
+            <textarea
+              placeholder="Ej. Text overlay 'OFERTA' in Modern Grotesk, bold. Glassmorphism effect, subtle shadow."
+              rows={3}
+              value={typography}
+              onChange={(e) => setTypography(e.target.value)}
+              className="w-full p-2.5 border border-dashed border-[#ccc] font-serif italic text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa] resize-none"
+            />
+            <div className="mt-2 text-[10px] text-theme-muted font-sans leading-relaxed">
+              <strong>Tip:</strong> Especifica el diseño para lograr un impacto tipográfico profesional.<br/>
+              • <em>Estilos:</em> "Modern Grotesk, bold", "Elegant Serif gold font", "Futuristic neon 3D"<br/>
+              • <em>Efectos de texto:</em> "creamy studio lighting on text", "glowing neon shadows", "embossed text"
+            </div>
+          </div>
+
+          {/* Live Preview of Input Structure */}
+          <div className="mt-[30px] p-[15px] bg-[#f9f9f9] border border-[#e5e5e5] rounded-[4px]">
+            <div className="flex items-center space-x-2 mb-[10px]">
+              <Sparkles className="w-3 h-3 text-theme-accent" />
+              <span className="text-[10px] font-bold uppercase tracking-[1px] text-theme-muted">
+                Vista Previa en Tiempo Real (Estructura Base)
+              </span>
+            </div>
+            <div className="font-mono text-[11px] text-[#666] leading-relaxed break-words bg-white p-[10px] border border-[#eee] shadow-sm">
+              <span className="text-theme-accent">/imagine prompt:</span>{' '}
+              {angle ? `[${angle}]` : '[Ángulo]'} shot of{' '}
+              <span className="text-theme-ink font-semibold">{product || '[Producto/Servicio]'}</span>,{' '}
+              {style || '[Entorno y Estilo Visual]'},{' '}
+              text overlay: <span className="italic">"{typography || '[Tipografía y Textos]'}"</span>{' '}
+              <span className="text-[#aaa]">--v 6.0 --ar 4:5</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Result Panel (Output Area) */}
+        <div className="flex flex-col">
+          <div className="flex justify-between items-end mb-[15px]">
+            <span className="text-[11px] font-bold uppercase tracking-[1px] text-theme-accent">
+              {activeTab === 'current' ? 'Mega-Prompt Maestro' : 'Historial de Prompts'}
+            </span>
+            <div className="flex space-x-2">
+               <button 
+                onClick={() => setActiveTab('current')} 
+                className={`text-[10px] uppercase tracking-[1px] pb-1 border-b-2 transition ${activeTab === 'current' ? 'border-theme-accent text-theme-ink' : 'border-transparent text-theme-muted hover:text-theme-ink'}`}
+               >
+                 Actual
+               </button>
+               <button 
+                onClick={() => setActiveTab('history')} 
+                className={`text-[10px] uppercase tracking-[1px] pb-1 border-b-2 transition ${activeTab === 'history' ? 'border-theme-accent text-theme-ink' : 'border-transparent text-theme-muted hover:text-theme-ink'}`}
+               >
+                 Historial ({history.length})
+               </button>
+            </div>
+          </div>
+
+          <div className="bg-[#111] text-[#a0a0a0] p-[30px] rounded-[8px] font-mono text-[12px] leading-[1.6] relative flex-1 min-h-[400px] flex flex-col">
+            {activeTab === 'current' ? (
+              <>
+                <div className="absolute top-2.5 right-[15px] text-[8px] text-theme-accent">MASTER_PROMPT_v2.0</div>
+                <div className="flex-1 overflow-y-auto">
+                  {generatedPrompt ? (
+                    <div className="whitespace-pre-wrap break-words">
+                      {generatedPrompt}
+                    </div>
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center opacity-50 space-y-4">
+                      <p className="text-center max-w-sm">
+                        A la espera de variables para generar código...
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+                {history.length > 0 ? (
+                  history.map((item) => (
+                    <details key={item.id} className="group border border-[#333] mb-4 bg-[#1a1a1a] rounded-[6px] overflow-hidden list-none [&::-webkit-details-marker]:hidden">
+                      <summary className="flex items-center justify-between p-3 cursor-pointer bg-[#222] hover:bg-[#2a2a2a] transition list-none outline-none">
+                         <div className="flex items-center space-x-3 overflow-hidden">
+                           <span className="text-[#a0a0a0] flex items-center space-x-1 text-[10px] shrink-0">
+                             <Clock className="w-3 h-3" /> 
+                             <span>{item.timestamp.toLocaleTimeString()}</span>
+                           </span>
+                           <span className="text-[#111] bg-theme-accent px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold shrink-0">
+                             {item.angle}
+                           </span>
+                           <span className="text-[11px] font-sans text-white font-medium truncate max-w-[120px] sm:max-w-[200px]">
+                             {item.product || 'Sin producto'}
+                           </span>
+                         </div>
+                         
+                         <div className="flex items-center space-x-3 shrink-0">
+                           <div className="hidden lg:flex items-center space-x-2">
+                              {item.style && (
+                                <span className="text-[9px] text-[#aaa] bg-[#111] px-1.5 py-0.5 rounded border border-[#333] truncate max-w-[120px]" title={item.style}>
+                                  Es: {item.style}
+                                </span>
+                              )}
+                              {item.typography && (
+                                <span className="text-[9px] text-[#aaa] bg-[#111] px-1.5 py-0.5 rounded border border-[#333] truncate max-w-[120px]" title={item.typography}>
+                                  Ty: {item.typography}
+                                </span>
+                              )}
+                           </div>
+                           <span className="text-[#666] group-open:rotate-180 transition-transform">
+                             <ChevronDown className="w-4 h-4" />
+                           </span>
+                         </div>
+                      </summary>
+                      
+                      <div className="p-4 border-t border-[#333] bg-[#1a1a1a]">
+                        {/* Meta Tags Details */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px] text-[#888] mb-4 font-sans bg-[#111] p-3 rounded border border-[#2a2a2a]">
+                           <div>
+                             <span className="text-[#bbb] block mb-1 uppercase tracking-wider text-[8px] font-bold">1. Producto/Servicio</span>
+                             <span className="block text-white" title={item.product}>{item.product || '-'}</span>
+                           </div>
+                           <div>
+                             <span className="text-[#bbb] block mb-1 uppercase tracking-wider text-[8px] font-bold">2. Estilo Visual</span>
+                             <span className="block text-white line-clamp-3" title={item.style}>{item.style || '-'}</span>
+                           </div>
+                           <div>
+                             <span className="text-[#bbb] block mb-1 uppercase tracking-wider text-[8px] font-bold">3. Tipografía</span>
+                             <span className="block text-white line-clamp-3" title={item.typography}>{item.typography || '-'}</span>
+                           </div>
+                        </div>
+                        
+                        {/* Prompt Body */}
+                        <div className="relative">
+                          <label className="text-[9px] text-[#888] uppercase tracking-[2px] mb-2 block">Prompt Generado</label>
+                          <div className="whitespace-pre-wrap break-words text-[#e0e0e0] font-mono text-[11px] bg-black p-3.5 rounded border border-[#333] selection:bg-theme-accent/30 leading-[1.8] shadow-inner">
+                            {item.prompt}
+                          </div>
+                          <button
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(item.prompt);
+                                setCopied(true);
+                                setTimeout(() => setCopied(false), 2000);
+                              } catch (err) {
+                                console.error("Failed to copy", err);
+                              }
+                            }}
+                            className="absolute top-6 right-2 text-[10px] uppercase tracking-[1px] text-theme-ink hover:text-white hover:bg-theme-ink transition flex items-center space-x-1.5 bg-theme-accent px-2 py-1.5 rounded font-bold"
+                          >
+                             <Copy className="w-3 h-3" /> <span>Copiar</span>
+                          </button>
+                        </div>
+                      </div>
+                    </details>
+                  ))
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center opacity-50 space-y-4">
+                    <p className="text-center max-w-sm">
+                      Aún no hay prompts en el historial.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
+
+          <div className="mt-[20px] flex space-x-4">
+            <button
+              onClick={handleGenerate}
+              disabled={isGenerating}
+              className="flex-1 bg-theme-ink text-white border-none p-[15px] text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition opacity-90 hover:opacity-100 disabled:opacity-50"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Procesando...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Generar Mega-Prompt</span>
+                </>
+              )}
+            </button>
+
+            {generatedPrompt && (
+              <button
+                onClick={copyToClipboard}
+                className="flex-[0.5] bg-theme-accent text-theme-ink border-none p-[15px] text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition opacity-90 hover:opacity-100 font-bold"
+                title="Copiar al portapapeles"
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                <span className="hidden sm:inline">{copied ? 'Copiado' : 'Copiar'}</span>
+              </button>
+            )}
+          </div>
+
+        </div>
+        
+      </main>
+
+      {/* Footer */}
+      <footer className="mt-[20px] text-[10px] text-theme-muted flex justify-between">
+        <div>Diseñado para Directores de Arte y Creadores de Contenido</div>
+        <div>© 2026 Mesa de Trabajo Modular</div>
+      </footer>
+    </div>
+  );
+}
