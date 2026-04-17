@@ -42,15 +42,25 @@ const STYLE_PRESETS = [
   { label: 'Editorial / Vogue', value: 'Editorial photography, Vogue style, high fashion, softbox lighting, magazine cover aesthetic', description: 'Sofisticación de alta moda con iluminación suave y elegante.' },
   { label: 'Glow Oscuro', value: 'Dark mode ambiance, low-key lighting, subtle rim light highlighting edges, moody', description: 'Ambiente nocturno con iluminación de borde para un estilo misterioso.' },
   { label: 'Aesthetic Natural', value: 'Earthy tones, golden hour sunlight, organic textures, warm atmosphere, linen and wood elements', description: 'Tonos cálidos y naturales propios de la hora dorada.' },
-  { label: 'Ciberpunk', value: 'Cyberpunk aesthetic, neon pink and cyan glows, night city environment, futuristic realism', description: 'Estética urbana futurista con luces de neón cian y magenta.' },
   { label: 'Estudio Brillante', value: 'Bright and airy photo studio, seamless white backdrop, soft diffused flat lighting', description: 'Estilo comercial brillante, perfecto para productos claros.' },
   { label: 'Granular Analógico', value: 'Vintage film camera grain, Kodak Portra 400 aesthetic, nostalgic, slight vignette', description: 'Textura nostálgica de película antigua con grano sutil.' },
   { label: 'Humo y Sombras', value: 'Mysterious atmosphere, heavy fog, silhouetted shapes, cinematic rim lighting', description: 'Atmósfera cinematográfica con niebla y siluetas dramáticas.' },
-  { label: 'High-Tech Glassmorphism', value: 'Glassmorphism UI elements, blurred translucent surfaces, vibrant holographic highlights, minimalist tech aesthetic', description: 'Estética tecnológica con superficies translúcidas y reflejos holográficos.' },
   { label: 'Arquitectura Brutalista', value: 'Brutalist concrete textures, stark angles, industrial aesthetic, dramatic lighting, high contrast', description: 'Texturas de hormigón crudo y ángulos marcados industriales.' },
   { label: '3D Renderizado Suave', value: 'Soft 3D render, clay texture, pastel colors, isometric view, soft diffused lighting, surreal and playful', description: 'Estilo 3D lúdico con texturas suaves y colores pastel.' },
   { label: 'Sostenible / ECO', value: 'Sustainable eco-friendly aesthetic, lush greenery, natural sunlight, paper textures, warm and inviting atmosphere', description: 'Enfoque orgánico y natural centrado en la sostenibilidad.' },
-  { label: 'Futurismo Líquido', value: 'Liquid metal textures, iridescent chrome, fluid abstract shapes, soft ethereal lighting, futuristic and polished', description: 'Estilo futurista pulido con metales líquidos y superficies cromadas.' }
+  { label: 'Bohemio Chic', value: 'Bohemian style, warm natural light, macrame decor, indoor plants, cozy and relaxed atmosphere', description: 'Estilo relajado con elementos naturales y plantas.' },
+  { label: 'Soft Glam', value: 'Soft blur effect, dreamy lighting, flattering skin tones, delicate shadows, elegant and romantic', description: 'Look romántico y favorecedor con iluminación suave.' },
+  { label: 'Vintage Polaroid', value: 'Faded colors, overexposed highlights, classic white frame aesthetic, nostalgic 90s feel', description: 'Toque nostálgico con la estética clásica de Polaroid.' },
+  { label: 'Zen / Japandi', value: 'Japandi style, light wood, clean lines, neutral colors, calm and orderly balance', description: 'Fusión minimalista entre estilo japonés y escandinavo.' },
+  { label: 'Noir Contemporáneo', value: 'High contrast black and white, dramatic hard light, classic film noir modern interpretation', description: 'Estilo blanco y negro de alto contraste con toque moderno.' },
+  { label: 'Clínico Premium', value: 'Pristine white clinical environment, sterile aesthetic, razor-sharp focus, bright clean softbox lighting, high-end professional healthcare feel', description: 'Estética clínica impecable, limpia y profesional.' },
+  { label: 'Gastronómico Gourmet', value: 'Rich deep contrast, moody lighting focused on food textures, warm rim light, fine dining aesthetic, professional food photography', description: 'Enfoque profesional para gastronomía, resaltando texturas y luz cálida.' },
+  { label: 'Retrato Ejecutivo', value: 'Professional headshot style, clean blurred office background, soft three-point lighting, authoritative and approachable, corporate portraiture', description: 'Ideal para perfiles corporativos, iluminación profesional favorecedora.' },
+  { label: 'Hotel Boutique / Lujo', value: 'High-end interior photography, wide angle, soft architectural lighting, gold accents, opulent and inviting, residential architectural style', description: 'Lujo residencial, perfecto para arquitectura y servicios de alta gama.' },
+  { label: 'Minimalismo Médico', value: 'Ethical and professional medical aesthetic, soft blues and whites, focused lighting on human interaction, trust-inspiring, clean composition', description: 'Minimalismo enfocado en la empatía y confianza profesional.' },
+  { label: 'Culinary Artisan', value: 'Rustic artisan aesthetic, overhead natural lighting, raw ingredients, flour dust, focus on craftsmanship, warm and wholesome', description: 'Enfoque artesanal y orgánico para restaurantes y cocina.' },
+  { label: 'Lifestyle Servicios', value: 'Dynamic storytelling, real-world application of service, bright natural lighting, authentic human interaction, professional but approachable', description: 'Captura el servicio en acción con un estilo auténtico y dinámico.' },
+  { label: 'Foto Estudio Personal', value: 'Classic studio portrait, solid neutral backdrop, precise lighting, timeless composition, focus on facial clarity, professional retouching aesthetic', description: 'Retrato de estudio personal, clásico, atemporal y pulido.' }
 ];
 
 const TYPOGRAPHY_PRESETS = [
@@ -73,6 +83,15 @@ export default function App() {
   const [angle, setAngle] = useState(ANGLES[0].label);
   const [productTitle, setProductTitle] = useState('');
   const [productSubtitle, setProductSubtitle] = useState('');
+  const [skinTone, setSkinTone] = useState('');
+  const [facialFeatures, setFacialFeatures] = useState('');
+  const [hair, setHair] = useState('');
+  const [bodyType, setBodyType] = useState('');
+  const [ethnicity, setEthnicity] = useState('');
+  const [expression, setExpression] = useState('');
+  const [age, setAge] = useState('');
+  const [position, setPosition] = useState('');
+  const [scenery, setScenery] = useState('');
   const [productDescriptionCtx, setProductDescriptionCtx] = useState('');
   const [style, setStyle] = useState('');
   const [selectedStylePresets, setSelectedStylePresets] = useState<string[]>([]);
@@ -107,8 +126,8 @@ export default function App() {
 
   const handleGenerate = async () => {
     playClickSound();
-    if (!productTitle || !style || !typography) {
-      setError('Por favor, completa Título del Diseño, Estilo Visual y Diseño de Títulos.');
+    if (!style || !typography) {
+      setError('Por favor, completa, al menos, Estilo Visual y Diseño de Títulos.');
       return;
     }
     
@@ -121,18 +140,25 @@ export default function App() {
 
     const selectedAngle = ANGLES.find(a => a.label === angle);
     
-    // Construct prompt locally based on selections
-    const prompt = `Professional digital advertisement for a ${productTitle} ${productSubtitle}. 
+    const isNoText = typography.toLowerCase() === 'sin texto';
+    const tOverlay = isNoText ? "STRICTLY NO TEXT" : typography;
     
-Composition Strategy: ${selectedAngle?.label || angle} shot. ${selectedAngle?.description || ''}
+    // Construct prompt locally based on selections
+    const protagonistDetails = [age, skinTone, ethnicity, bodyType, hair, expression, position, facialFeatures].filter(Boolean).join(', ');
+    const prompt = `Professional digital advertisement ${productTitle ? `for a ${productTitle} ${productSubtitle}` : `showcasing a professional product/service`}. 
+    
+    ${protagonistDetails ? `Protagonista: ${protagonistDetails}.` : ''}
+    ${scenery ? `Escenario: ${scenery}.` : ''}
+    
+    Composition Strategy: ${selectedAngle?.label || angle} shot. ${selectedAngle?.description || ''}
 Visual Style & Environment: ${style}
-Typography & Graphic Overlay: text overlay: "${typography}".
+Typography & Graphic Overlay: ${isNoText ? tOverlay : `text overlay: "${tOverlay}"`}
 
 Technical Specifications: 
 - High-conversion social media advertisement layout.
 - Hyper-detailed image quality with professional lighting and textures.
 - Clear visual hierarchy with appropriate negative space for CTA placement.
-- IMPORTANT: All text overlay elements must be rendered in Spanish: "${typography}". 
+${isNoText ? "" : `- IMPORTANT: All text overlay elements must be rendered in Spanish: "${tOverlay}". `}
 - Optimized for modern AI image synthesis, high-impact branding. --v 6.0 --ar 4:5 --style raw
 
 Context: ${productDescriptionCtx}`;
@@ -168,12 +194,22 @@ Context: ${productDescriptionCtx}`;
   return (
     <div className="min-h-screen bg-theme-bg text-theme-ink font-sans p-4 md:p-10 flex flex-col selection:bg-theme-accent/30 selection:text-theme-ink">
       {/* Header */}
-      <header className="flex justify-between items-end mb-[30px] border-b border-theme-ink pb-2.5">
-        <div className="font-serif italic text-2xl font-light">
-          Sistema Modular de Prompts
+      <header className="flex justify-between items-center mb-[40px] p-6 bg-white rounded-2xl shadow-sm border border-[#eee]">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center shadow-md">
+            <span className="text-2xl">🍌</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-medium tracking-tight text-theme-ink uppercase">
+              Sistema Modular de Prompts
+            </h1>
+            <p className="text-xs font-medium uppercase tracking-[2px] text-theme-accent">
+              Powered by Nano Banana
+            </p>
+          </div>
         </div>
-        <div className="text-[10px] uppercase tracking-[2px] text-theme-muted hidden sm:block">
-          Engine: Nano Banana 2 (Gemini Driven)
+        <div className="hidden sm:block text-[10px] uppercase tracking-[2px] font-bold text-[#aaa] bg-[#f8f8f8] px-3 py-1 rounded-full border border-[#eee]">
+          Engine: Gemini Driven
         </div>
       </header>
 
@@ -222,7 +258,7 @@ Context: ${productDescriptionCtx}`;
           <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm space-y-4">
             <span className="text-base font-bold uppercase tracking-[1px] block text-theme-ink flex items-center">
               <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
-              2) Título del Diseño (Producto o Servicio)
+              2) Detalles del Diseño (Producto o Servicio)
             </span>
             <input
               type="text"
@@ -238,8 +274,132 @@ Context: ${productDescriptionCtx}`;
               onChange={(e) => setProductSubtitle(e.target.value)}
               className="w-full p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa]"
             />
+            <div className="grid grid-cols-2 gap-2">
+              <select value={skinTone} onChange={(e) => setSkinTone(e.target.value)} className="w-full p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-white outline-none focus:border-theme-ink">
+                <option value="">Tono de Piel</option>
+                {['Claro', 'Bronceado', 'Oliva', 'Marrón Claro', 'Marrón Oscuro', 'Profundo'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+              <select value={bodyType} onChange={(e) => setBodyType(e.target.value)} className="w-full p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-white outline-none focus:border-theme-ink">
+                <option value="">Contextura personal</option>
+                {['Promedio', 'Alta', 'Delgada', 'Atlética', 'Curvilínea', 'Musculosa'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+              <select value={hair} onChange={(e) => setHair(e.target.value)} className="w-full p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-white outline-none focus:border-theme-ink">
+                <option value="">Cabello</option>
+                {['Corto', 'Largo', 'Rizado', 'Ondulado', 'Lacio', 'Calvo', 'Teñido', 'Rubio', 'Moreno', 'Pelirrojo', 'Castaño Claro', 'Castaño Oscuro', 'Degradado', 'Tupé', 'Corte pixie'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+              <select value={ethnicity} onChange={(e) => setEthnicity(e.target.value)} className="w-full p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-white outline-none focus:border-theme-ink">
+                <option value="">Etnia</option>
+                {['Europea', 'Africana', 'Asiática', 'Latina', 'Oriente Medio', 'Mixta'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+              <select value={expression} onChange={(e) => setExpression(e.target.value)} className="w-full p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-white outline-none focus:border-theme-ink">
+                <option value="">Expresión</option>
+                {['Feliz', 'Serio', 'Entusiasta', 'Sorprendido', 'Pensativo', 'Elegante', 'Confiado'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+              <select value={age} onChange={(e) => setAge(e.target.value)} className="w-full p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-white outline-none focus:border-theme-ink">
+                <option value="">Edad</option>
+                {['Niño', 'Niña', 'Adolescente (Hombre)', 'Adolescente (Mujer)', 'Adulto Joven (Hombre)', 'Adulto Joven (Mujer)', 'Adulto (Hombre)', 'Adulto (Mujer)', 'Adulto Mayor (Hombre)', 'Adulto Mayor (Mujer)'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: 'Pómulos marcados', value: 'high cheekbones' },
+                { label: 'Pecas', value: 'freckles' },
+                { label: 'Gafas', value: 'glasses' },
+                { label: 'Barba', value: 'beard' },
+                { label: 'Cicatrices', value: 'scars' },
+                { label: 'Ojos brillantes', value: 'bright-eyes' },
+                { label: 'Hoyuelos', value: 'dimples' },
+                { label: 'Tatuajes faciales', value: 'face tattoos' },
+                { label: 'Bigote', value: 'mustache' },
+                { label: 'Piercing', value: 'piercing' },
+                { label: 'Maquillaje pronunciado', value: 'strong makeup' },
+                { label: 'Cejas pobladas', value: 'thick eyebrows' },
+                { label: 'Piel bronceada', value: 'sun-kissed skin' },
+              ].map((feature) => {
+                const isSelected = facialFeatures.split(', ').includes(feature.value);
+                return (
+                  <button
+                    key={feature.value}
+                    type="button"
+                    onClick={() => {
+                      const current = facialFeatures ? facialFeatures.split(', ').filter(Boolean) : [];
+                      if (isSelected) {
+                        setFacialFeatures(current.filter((item) => item !== feature.value).join(', '));
+                      } else {
+                        setFacialFeatures([...current, feature.value].join(', '));
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      isSelected 
+                        ? 'bg-black text-white border-black' 
+                        : 'bg-white text-gray-700 border-[#ccc] hover:border-black'
+                    }`}
+                  >
+                    {feature.label}
+                  </button>
+                );
+              })}
+            </div>
+            <input
+              type="text"
+              placeholder="Escenario o ambiente..."
+              value={scenery}
+              onChange={(e) => setScenery(e.target.value)}
+              className="w-full p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa]"
+            />
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: 'Sentado', value: 'sitting' },
+                { label: 'Sentado en el suelo', value: 'sitting on floor' },
+                { label: 'Parado', value: 'standing' },
+                { label: 'De espaldas', value: 'back view' },
+                { label: 'Acostado', value: 'lying down' },
+                { label: 'Caminando', value: 'walking' },
+                { label: 'Corriendo', value: 'running' },
+                { label: 'En movimiento', value: 'in motion' },
+                { label: 'Inclinado', value: 'leaning' },
+                { label: 'Recostado en la pared', value: 'leaning against a wall' },
+                { label: 'De perfil', value: 'profile view' },
+                { label: 'En cuclillas', value: 'squatting' },
+                { label: 'Arrodillado', value: 'kneeling' },
+                { label: 'Saltando', value: 'jumping' },
+                { label: 'Bailando', value: 'dancing' },
+                { label: 'Cruzado de brazos', value: 'arms crossed' },
+                { label: 'Manos en la cintura', value: 'hands on hips' },
+                { label: 'Hablando', value: 'talking' },
+                { label: 'Extendiendo la mano', value: 'reaching out' },
+                { label: 'Mirando hacia otro lado', value: 'looking away' },
+                { label: 'Mirando al espectador', value: 'looking at viewer' },
+                { label: 'Durmiendo', value: 'sleeping' },
+                { label: 'Meditando', value: 'meditating' },
+                { label: 'Trabajando', value: 'working' },
+              ].map((pos) => {
+                const isSelected = position.split(', ').includes(pos.value);
+                return (
+                  <button
+                    key={pos.value}
+                    type="button"
+                    onClick={() => {
+                      const current = position ? position.split(', ').filter(Boolean) : [];
+                      if (isSelected) {
+                        setPosition(current.filter((item) => item !== pos.value).join(', '));
+                      } else {
+                        setPosition([...current, pos.value].join(', '));
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      isSelected 
+                        ? 'bg-black text-white border-black' 
+                        : 'bg-white text-gray-700 border-[#ccc] hover:border-black'
+                    }`}
+                  >
+                    {pos.label}
+                  </button>
+                );
+              })}
+            </div>
             <textarea
-              placeholder="Descripción del contexto (para el prompt)"
+              placeholder="Descripción principal del Producto o Servicio (para el promt)"
               value={productDescriptionCtx}
               onChange={(e) => setProductDescriptionCtx(e.target.value)}
               className="w-full h-20 p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa] resize-none"
@@ -280,9 +440,18 @@ Context: ${productDescriptionCtx}`;
               onChange={(e) => setStyle(e.target.value)}
               className="w-full p-2.5 border border-dashed border-[#ccc] font-serif italic text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa] resize-none"
             />
-            <div className="mt-2 text-[10px] text-theme-muted font-sans leading-relaxed">
-              <strong>Tip:</strong> Puedes combinar los botones de arriba o escribir tus propias especificaciones.<br/>
-              • <em>Ejemplo:</em> "Golden hour glow, volumentric fog, photorealistic"
+            {selectedStylePresets.length > 0 && (
+              <div className="bg-[#f4f4f4] border-l-4 border-theme-accent p-3 mt-3 rounded-r-md">
+                <p className="text-theme-ink text-xs font-serif leading-relaxed">
+                  {selectedStylePresets.map(label => {
+                    const preset = STYLE_PRESETS.find(p => p.label === label);
+                    return preset ? <span key={label} className="block mb-1"><strong>{label}:</strong> {preset.description}</span> : null;
+                  })}
+                </p>
+              </div>
+            )}
+            <div className="mt-3 text-[11px] text-theme-muted font-sans bg-[#f9f9f9] p-2 rounded">
+              <strong>Tip:</strong> Puedes combinar estilos o escribir especificaciones personalizadas.
             </div>
           </div>
 
@@ -293,6 +462,16 @@ Context: ${productDescriptionCtx}`;
               4) Diseño de Títulos y Tipografía
             </span>
             <div className="flex flex-wrap gap-2 mb-[10px]">
+              <button
+                onClick={() => {
+                    playClickSound();
+                    setSelectedTypographyPresets([]);
+                    setTypography('sin texto');
+                }}
+                className={`px-4 py-2 text-xs uppercase tracking-[1px] border transition cursor-pointer ${typography.toLowerCase() === 'sin texto' ? 'bg-theme-ink text-white border-theme-ink' : 'border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white'}`}
+              >
+                  Sin estilo de texto
+              </button>
               {TYPOGRAPHY_PRESETS.map((preset, index) => (
                 <button
                   key={index}
@@ -329,8 +508,7 @@ Context: ${productDescriptionCtx}`;
 
           {/* Live Preview of Input Structure */}
           <div className="mt-[30px] p-[20px] bg-[#0a0a0a] rounded-[8px] shadow-lg border border-[#222]">
-            {/* Generar Action Bar - Added here */}
-            <div className="mb-6 flex space-x-4">
+            <div className="fixed bottom-0 left-0 w-full p-4 bg-[#0a0a0a] border-t border-[#222] flex space-x-4 z-50">
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating}
@@ -363,6 +541,9 @@ Context: ${productDescriptionCtx}`;
 
             <div className="flex items-center justify-between mb-[15px]">
               <div className="flex items-center space-x-2">
+                <h2 className="text-sm font-bold text-[#888] tracking-tight">Mega-Prompt Maestro</h2>
+              </div>
+              <div className="flex items-center space-x-2">
                 <div className="flex space-x-1.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
                   <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
@@ -370,6 +551,9 @@ Context: ${productDescriptionCtx}`;
                 </div>
                 <span className="text-[10px] font-mono text-[#666] ml-2">preview.mdj</span>
               </div>
+            </div>
+            
+            <div className="flex items-center justify-end mb-[15px]">
               <span className="text-[9px] uppercase tracking-[1px] text-[#888] font-bold flex items-center">
                  <div className="w-1.5 h-1.5 rounded-full bg-theme-accent animate-pulse mr-2"></div>
                  Sintaxis en Vivo
