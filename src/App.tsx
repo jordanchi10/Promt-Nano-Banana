@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sparkles, Copy, Check, Loader2, ArrowRight, Clock, ChevronDown,
   Award, Camera, Smartphone, ZoomIn, Scale, ArrowRightLeft, 
@@ -18,39 +18,39 @@ interface HistoryItem {
 }
 
 const ANGLES = [
-  { id: 'hero', icon: Award, label: 'Hero Image / Glamour Shot', description: 'Producto glorificado en el centro, impacto visual, minimalista y limpio' },
-  { id: 'lifestyle_premium', icon: Camera, label: 'Lifestyle Premium', description: 'Contexto aspiracional, entorno de alta gama, uso en la vida real ideal' },
-  { id: 'ugc_organico', icon: Smartphone, label: 'UGC / Estilo Orgánico', description: 'Foto estilo celular, selfie o POV. Auténtica, sin filtro de estudio, relatable' },
-  { id: 'macro_sensorial', icon: ZoomIn, label: 'Macro Sensorial', description: 'Acercamiento extremo (texturas, gotas, detalles) que evoca sensaciones físicas' },
-  { id: 'nosotros_vs_ellos', icon: Scale, label: 'Nosotros vs Ellos', description: 'Diseño de contraste agresivo: nuestro producto innovador vs la competencia obsoleta' },
-  { id: 'antes_despues', icon: ArrowRightLeft, label: 'Antes vs Después (Resultados)', description: 'Composición dividida (split-screen) que evidencia una transformación clara' },
-  { id: 'prueba_social', icon: ThumbsUp, label: 'Prueba Social (Social Proof)', description: 'Personas satisfechas junto a elementos de confianza: 5 estrellas, sellos o reseñas' },
-  { id: 'urgencia_escasez', icon: Flame, label: 'Urgencia / FOMO (Flash Sale)', description: 'Diseño agresivo, colores de alerta, sensación inminente de oferta por tiempo limitado' },
-  { id: 'anatomia_infografia', icon: Network, label: 'Anatomía del Producto', description: 'Despiece espacial del producto listo para recibir flechas texturizadas o viñetas técnicas' },
-  { id: 'secreto_revelado', icon: Key, label: 'El Secreto / El Hack', description: 'El producto presentado como un descubrimiento oculto o el "ingrediente mágico"' },
-  { id: 'flatlay_estetico', icon: LayoutGrid, label: 'Flatlay Estético (Vista Cenital)', description: 'Organización impecable desde arriba, rodeando el producto de sus complementos' },
-  { id: 'unboxing_experiencia', icon: PackageOpen, label: 'Experiencia Unboxing', description: 'Momento de desempaquetado con perspectiva en primera persona (P.O.V.)' },
-  { id: 'detras_escena', icon: Hammer, label: 'Detrás de Escena (Craftsmanship)', description: 'Muestra artesanía, elaboración, taller o manos expertas operando el servicio/producto' },
-  { id: 'problema_agitado', icon: Zap, label: 'Agitar el Problema', description: 'Identifica una frustración intensa, colores dramáticos o expresión de estrés' },
-  { id: 'climax_alivio', icon: Sun, label: 'Clímax y Alivio', description: 'El resplandor cálido posterior: el exacto instante en que el producto detiene el dolor' },
+  { id: 'hero', icon: Award, label: 'Hero Image / Glamour Shot', description: 'El producto es la estrella absoluta. Imagina una foto de estudio impecable donde el artículo destaca por sí solo sobre un fondo limpio, captando la atención de inmediato.', type: 'Producto' },
+  { id: 'lifestyle_premium', icon: Camera, label: 'Lifestyle Premium', description: 'Mostramos tu producto en un entorno aspiracional y lujoso. Queremos que el usuario se visualice a sí mismo disfrutando de la vida que este producto hace posible.', type: 'Producto' },
+  { id: 'ugc_organico', icon: Smartphone, label: 'UGC / Estilo Orgánico', description: 'Es como si un amigo te recomendara el producto por WhatsApp. Foto auténtica, estilo celular, sin poses perfectas. Conecta a nivel humano y genera confianza inmediata.', type: 'Producto' },
+  { id: 'macro_sensorial', icon: ZoomIn, label: 'Macro Sensorial', description: 'Un primer plano que invita a tocar. Nos centramos en texturas, gotas, detalles mínimos que despiertan el deseo físico y hacen que el usuario quiera experimentar el producto.', type: 'Producto' },
+  { id: 'nosotros_vs_ellos', icon: Scale, label: 'Nosotros vs Ellos', description: 'Jugamos con el contraste total. Mostramos la frustración de usar la competencia frente a la claridad y elegancia de tu solución. Es la mejor forma de demostrar superioridad.', type: 'Ambos' },
+  { id: 'antes_despues', icon: ArrowRightLeft, label: 'Antes vs Después (Resultados)', description: 'El argumento definitivo: el resultado visual. Dividimos la imagen para que el contraste entre "el problema" y "la solución" sea innegable y contundente.', type: 'Ambos' },
+  { id: 'prueba_social', icon: ThumbsUp, label: 'Prueba Social (Social Proof)', description: '¿Qué dicen los demás? Validamos tu marca mostrando personas reales felices junto a estrellas, reseñas, sellos de autoridad o testimonios que calman cualquier duda.', type: 'Ambos' },
+  { id: 'urgencia_escasez', icon: Flame, label: 'Urgencia / FOMO (Flash Sale)', description: 'Activamos el miedo a perderse la oportunidad. Un diseño directo, colores vibrantes y una promesa de tiempo limitado que impulsa al usuario a comprar ya.', type: 'Ambos' },
+  { id: 'anatomia_infografia', icon: Network, label: 'Anatomía del Producto', description: 'Explicamos la inteligencia detrás del objeto. Despiezamos el producto para que el usuario entienda los beneficios técnicos de cada parte de forma visual.', type: 'Producto' },
+  { id: 'secreto_revelado', icon: Key, label: 'El Secreto / El Hack', description: 'Transformamos tu producto en un "descubrimiento". Es ese ingrediente mágico, el truco que nadie conoce y que soluciona los problemas de nuestros clientes.', type: 'Ambos' },
+  { id: 'flatlay_estetico', icon: LayoutGrid, label: 'Flatlay Estético (Vista Cenital)', description: 'Todo está perfectamente orquestado desde arriba. El producto rodeado de sus complementos, creando una atmósfera equilibrada, deseable y muy compartible.', type: 'Producto' },
+  { id: 'unboxing_experiencia', icon: PackageOpen, label: 'Experiencia Unboxing', description: 'Revivimos la emoción de abrir un regalo. Perspectiva desde los ojos del usuario, capturando ese momento íntimo y satisfactorio de ver el producto por primera vez.', type: 'Producto' },
+  { id: 'detras_escena', icon: Hammer, label: 'Detrás de Escena (Craftsmanship)', description: 'Humanizamos la marca mostrando la artesanía. Un vistazo al taller, a las manos que crean o al proceso de trabajo, transmitiendo calidad y dedicación real.', type: 'Ambos' },
+  { id: 'problema_agitado', icon: Zap, label: 'Agitar el Problema', description: 'No vendemos una solución sin antes entender el dolor. Mostramos la frustración de forma dramática para que la aparición de tu producto sea el alivio esperado.', type: 'Ambos' },
+  { id: 'climax_alivio', icon: Sun, label: 'Clímax y Alivio', description: 'El momento posterior a la calma. Capturamos la expresión de alivio y felicidad total cuando el problema desaparece, gracias a tu producto.', type: 'Ambos' },
 ];
 
 const STYLE_PRESETS = [
-  { label: 'Cinematográfico', value: 'Cinematic lighting, dramatic shadows, 8k resolution, highly detailed volumetric lighting' },
-  { label: 'Minimalista', value: 'Minimalist, clean background, negative space, soft studio lighting, Apple style presentation' },
-  { label: 'Vibrante / Pop', value: 'Vibrant neon colors, highly saturated, vivid, energetic lighting, pop-art infused' },
-  { label: 'Editorial / Vogue', value: 'Editorial photography, Vogue style, high fashion, softbox lighting, magazine cover aesthetic' },
-  { label: 'Glow Oscuro', value: 'Dark mode ambiance, low-key lighting, subtle rim light highlighting edges, moody' },
-  { label: 'Aesthetic Natural', value: 'Earthy tones, golden hour sunlight, organic textures, warm atmosphere, linen and wood elements' },
-  { label: 'Ciberpunk', value: 'Cyberpunk aesthetic, neon pink and cyan glows, night city environment, futuristic realism' },
-  { label: 'Estudio Brillante', value: 'Bright and airy photo studio, seamless white backdrop, soft diffused flat lighting' },
-  { label: 'Granular Analógico', value: 'Vintage film camera grain, Kodak Portra 400 aesthetic, nostalgic, slight vignette' },
-  { label: 'Humo y Sombras', value: 'Mysterious atmosphere, heavy fog, silhouetted shapes, cinematic rim lighting' },
-  { label: 'High-Tech Glassmorphism', value: 'Glassmorphism UI elements, blurred translucent surfaces, vibrant holographic highlights, minimalist tech aesthetic' },
-  { label: 'Arquitectura Brutalista', value: 'Brutalist concrete textures, stark angles, industrial aesthetic, dramatic lighting, high contrast' },
-  { label: '3D Renderizado Suave', value: 'Soft 3D render, clay texture, pastel colors, isometric view, soft diffused lighting, surreal and playful' },
-  { label: 'Sostenible / ECO', value: 'Sustainable eco-friendly aesthetic, lush greenery, natural sunlight, paper textures, warm and inviting atmosphere' },
-  { label: 'Futurismo Líquido', value: 'Liquid metal textures, iridescent chrome, fluid abstract shapes, soft ethereal lighting, futuristic and polished' }
+  { label: 'Cinematográfico', value: 'Cinematic lighting, dramatic shadows, 8k resolution, highly detailed volumetric lighting', description: 'Atmosfera de película de alto presupuesto con contraste dramático.' },
+  { label: 'Minimalista', value: 'Minimalist, clean background, negative space, soft studio lighting, Apple style presentation', description: 'Simplicidad máxima y espacios abiertos para un enfoque limpio.' },
+  { label: 'Vibrante / Pop', value: 'Vibrant neon colors, highly saturated, vivid, energetic lighting, pop-art infused', description: 'Colores neón y alta saturación para máxima energía.' },
+  { label: 'Editorial / Vogue', value: 'Editorial photography, Vogue style, high fashion, softbox lighting, magazine cover aesthetic', description: 'Sofisticación de alta moda con iluminación suave y elegante.' },
+  { label: 'Glow Oscuro', value: 'Dark mode ambiance, low-key lighting, subtle rim light highlighting edges, moody', description: 'Ambiente nocturno con iluminación de borde para un estilo misterioso.' },
+  { label: 'Aesthetic Natural', value: 'Earthy tones, golden hour sunlight, organic textures, warm atmosphere, linen and wood elements', description: 'Tonos cálidos y naturales propios de la hora dorada.' },
+  { label: 'Ciberpunk', value: 'Cyberpunk aesthetic, neon pink and cyan glows, night city environment, futuristic realism', description: 'Estética urbana futurista con luces de neón cian y magenta.' },
+  { label: 'Estudio Brillante', value: 'Bright and airy photo studio, seamless white backdrop, soft diffused flat lighting', description: 'Estilo comercial brillante, perfecto para productos claros.' },
+  { label: 'Granular Analógico', value: 'Vintage film camera grain, Kodak Portra 400 aesthetic, nostalgic, slight vignette', description: 'Textura nostálgica de película antigua con grano sutil.' },
+  { label: 'Humo y Sombras', value: 'Mysterious atmosphere, heavy fog, silhouetted shapes, cinematic rim lighting', description: 'Atmósfera cinematográfica con niebla y siluetas dramáticas.' },
+  { label: 'High-Tech Glassmorphism', value: 'Glassmorphism UI elements, blurred translucent surfaces, vibrant holographic highlights, minimalist tech aesthetic', description: 'Estética tecnológica con superficies translúcidas y reflejos holográficos.' },
+  { label: 'Arquitectura Brutalista', value: 'Brutalist concrete textures, stark angles, industrial aesthetic, dramatic lighting, high contrast', description: 'Texturas de hormigón crudo y ángulos marcados industriales.' },
+  { label: '3D Renderizado Suave', value: 'Soft 3D render, clay texture, pastel colors, isometric view, soft diffused lighting, surreal and playful', description: 'Estilo 3D lúdico con texturas suaves y colores pastel.' },
+  { label: 'Sostenible / ECO', value: 'Sustainable eco-friendly aesthetic, lush greenery, natural sunlight, paper textures, warm and inviting atmosphere', description: 'Enfoque orgánico y natural centrado en la sostenibilidad.' },
+  { label: 'Futurismo Líquido', value: 'Liquid metal textures, iridescent chrome, fluid abstract shapes, soft ethereal lighting, futuristic and polished', description: 'Estilo futurista pulido con metales líquidos y superficies cromadas.' }
 ];
 
 const TYPOGRAPHY_PRESETS = [
@@ -71,7 +71,9 @@ const TYPOGRAPHY_PRESETS = [
 
 export default function App() {
   const [angle, setAngle] = useState(ANGLES[0].label);
-  const [product, setProduct] = useState('');
+  const [productTitle, setProductTitle] = useState('');
+  const [productSubtitle, setProductSubtitle] = useState('');
+  const [productDescriptionCtx, setProductDescriptionCtx] = useState('');
   const [style, setStyle] = useState('');
   const [selectedStylePresets, setSelectedStylePresets] = useState<string[]>([]);
   const [typography, setTypography] = useState('');
@@ -105,8 +107,8 @@ export default function App() {
 
   const handleGenerate = async () => {
     playClickSound();
-    if (!product || !style || !typography) {
-      setError('Por favor, completa Producto/Servicio, Estilo Visual y Diseño de Títulos.');
+    if (!productTitle || !style || !typography) {
+      setError('Por favor, completa Título del Diseño, Estilo Visual y Diseño de Títulos.');
       return;
     }
     
@@ -120,7 +122,7 @@ export default function App() {
     const selectedAngle = ANGLES.find(a => a.label === angle);
     
     // Construct prompt locally based on selections
-    const prompt = `Professional digital advertisement for a ${product}. 
+    const prompt = `Professional digital advertisement for a ${productTitle} ${productSubtitle}. 
     
 Composition Strategy: ${selectedAngle?.label || angle} shot. ${selectedAngle?.description || ''}
 Visual Style & Environment: ${style}
@@ -131,7 +133,9 @@ Technical Specifications:
 - Hyper-detailed image quality with professional lighting and textures.
 - Clear visual hierarchy with appropriate negative space for CTA placement.
 - IMPORTANT: All text overlay elements must be rendered in Spanish: "${typography}". 
-- Optimized for modern AI image synthesis, high-impact branding. --v 6.0 --ar 4:5 --style raw`;
+- Optimized for modern AI image synthesis, high-impact branding. --v 6.0 --ar 4:5 --style raw
+
+Context: ${productDescriptionCtx}`;
 
     setGeneratedPrompt(prompt);
     setActiveTab('current');
@@ -139,7 +143,7 @@ Technical Specifications:
     const newHistoryItem: HistoryItem = {
       id: crypto.randomUUID(),
       angle,
-      product,
+      product: productTitle,
       style,
       typography,
       prompt: prompt,
@@ -176,12 +180,12 @@ Technical Specifications:
       <main className="flex flex-col gap-10 flex-1 w-full mx-auto md:max-w-none">
         
        {/* Controls Panel (Workbench) */}
-        <div className="bg-theme-paper p-[25px] rounded-[4px] shadow-[10px_10px_0px_rgba(0,0,0,0.05)] border border-[#ddd]">
+        <div className="p-0 space-y-6">
           {error && <p className="text-red-500 text-sm mb-4 text-center font-bold bg-white/50 p-2 rounded">{error}</p>}
           <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm">
             <span className="text-base font-bold uppercase tracking-[1px] mb-[15px] block text-theme-ink flex items-center">
               <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
-              A. Ángulo de Venta
+              1) Ángulo de Venta
             </span>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
               {ANGLES.map(a => {
@@ -206,21 +210,39 @@ Technical Specifications:
               <p className="text-theme-ink text-sm italic font-serif leading-relaxed">
                 {ANGLES.find(a => a.label === angle)?.description}
               </p>
+              <div className="mt-2">
+                <span className="text-[10px] uppercase tracking-[1px] font-bold bg-white px-2 py-0.5 rounded shadow-sm border border-[#ddd]">
+                  {ANGLES.find(a => a.label === angle)?.type}
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Step 2 */}
-          <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm">
-            <span className="text-base font-bold uppercase tracking-[1px] mb-[15px] block text-theme-ink flex items-center">
+          <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm space-y-4">
+            <span className="text-base font-bold uppercase tracking-[1px] block text-theme-ink flex items-center">
               <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
-              B. Producto o Servicio
+              2) Título del Diseño (Producto o Servicio)
             </span>
             <input
               type="text"
-              placeholder="Ej. Sombrero fino de Montecristi"
-              value={product}
-              onChange={(e) => setProduct(e.target.value)}
-              className="w-full p-2.5 border border-dashed border-[#ccc] font-serif italic text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa]"
+              placeholder="Título principal"
+              value={productTitle}
+              onChange={(e) => setProductTitle(e.target.value)}
+              className="w-full p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa]"
+            />
+            <input
+              type="text"
+              placeholder="Subtítulo"
+              value={productSubtitle}
+              onChange={(e) => setProductSubtitle(e.target.value)}
+              className="w-full p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa]"
+            />
+            <textarea
+              placeholder="Descripción del contexto (para el prompt)"
+              value={productDescriptionCtx}
+              onChange={(e) => setProductDescriptionCtx(e.target.value)}
+              className="w-full h-20 p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa] resize-none"
             />
           </div>
 
@@ -228,7 +250,7 @@ Technical Specifications:
           <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm">
             <span className="text-base font-bold uppercase tracking-[1px] mb-[10px] block text-theme-ink flex items-center">
               <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
-              C. Estilo Visual y Entorno
+              3) Estilo Visual y Entorno
             </span>
             <div className="flex flex-wrap gap-2 mb-[10px]">
               {STYLE_PRESETS.map((preset, index) => (
@@ -245,7 +267,7 @@ Technical Specifications:
                     }
                   }}
                   className={`px-4 py-2 text-xs uppercase tracking-[1px] border transition cursor-pointer ${selectedStylePresets.includes(preset.label) ? 'bg-theme-ink text-white border-theme-ink' : 'border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white'}`}
-                  title={preset.value}
+                  title={preset.description}
                 >
                   + {preset.label}
                 </button>
@@ -268,7 +290,7 @@ Technical Specifications:
           <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm">
             <span className="text-base font-bold uppercase tracking-[1px] mb-[10px] block text-theme-ink flex items-center">
               <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
-              D. Diseño de Títulos y Tipografía
+              4) Diseño de Títulos y Tipografía
             </span>
             <div className="flex flex-wrap gap-2 mb-[10px]">
               {TYPOGRAPHY_PRESETS.map((preset, index) => (
@@ -353,7 +375,7 @@ Technical Specifications:
                  Sintaxis en Vivo
                  <button 
                   onClick={async () => {
-                    const previewText = `/imagine prompt: ${angle ? `${ANGLES.find(a => a.label === angle)?.id || angle} shot` : '[Ángulo]'} of ${product || '[Producto/Servicio]'}, ${style || '[Entorno y Estilo Visual]'}, text overlay: "${typography || '[Tipografía y Textos]'}" --v 6.0 --ar 4:5 --style raw`;
+                    const previewText = `/imagine prompt: ${angle ? `${ANGLES.find(a => a.label === angle)?.id || angle} shot` : '[Ángulo]'} of ${productTitle ? (productSubtitle ? `${productTitle} ${productSubtitle}` : productTitle) : '[Producto/Servicio]'}, ${style || '[Estilo Visual]'}, text overlay: "${typography || '[Tipografía y Textos]'}" --v 6.0 --ar 4:5 --style raw\n\nContexto: ${productDescriptionCtx}`;
                     await navigator.clipboard.writeText(previewText);
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
@@ -375,8 +397,8 @@ Technical Specifications:
               <span className="text-[#666]"> of </span>
               
               {/* Product */}
-              <span className={`px-1.5 py-0.5 font-bold rounded ${product ? 'text-[#fff] border-b border-[#fff]' : 'border border-dashed border-[#444] text-[#555]'}`}>
-                 {product || '[Producto/Servicio]'}
+              <span className={`px-1.5 py-0.5 font-bold rounded ${productTitle ? 'text-[#fff] border-b border-[#fff]' : 'border border-dashed border-[#444] text-[#555]'}`}>
+                 {productTitle || '[Producto/Servicio]'}
               </span>
               <span className="text-[#666]">, </span>
               
@@ -401,8 +423,8 @@ Technical Specifications:
             {/* Status indicators */}
             <div className="mt-4 pt-4 border-t border-[#222] flex justify-between items-center">
                <div className="flex space-x-4 text-[9px] uppercase tracking-[2px] font-mono">
-                 <span className={`${product ? "text-[#27c93f]" : "text-[#555]"} flex items-center`}>
-                    <Check className={`w-3 h-3 mr-1 ${product ? 'opacity-100' : 'opacity-0'}`} /> SUJETO
+                 <span className={`${productTitle ? "text-[#27c93f]" : "text-[#555]"} flex items-center`}>
+                    <Check className={`w-3 h-3 mr-1 ${productTitle ? 'opacity-100' : 'opacity-0'}`} /> SUJETO
                  </span>
                  <span className={`${style ? "text-[#27c93f]" : "text-[#555]"} flex items-center`}>
                     <Check className={`w-3 h-3 mr-1 ${style ? 'opacity-100' : 'opacity-0'}`} /> ESTILO
@@ -411,8 +433,8 @@ Technical Specifications:
                     <Check className={`w-3 h-3 mr-1 ${typography ? 'opacity-100' : 'opacity-0'}`} /> TEXTOS
                  </span>
                </div>
-               <span className={`text-[9px] uppercase tracking-[1px] font-bold ${product && style && typography ? 'text-theme-accent' : 'text-[#555]'}`}>
-                 {product && style && typography ? 'Listo para Compilar' : 'Bloques Incompletos'}
+               <span className={`text-[9px] uppercase tracking-[1px] font-bold ${productTitle && style && typography ? 'text-theme-accent' : 'text-[#555]'}`}>
+                 {productTitle && style && typography ? 'Listo para Compilar' : 'Bloques Incompletos'}
                </span>
             </div>
           </div>
