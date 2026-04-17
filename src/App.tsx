@@ -74,7 +74,9 @@ export default function App() {
   const [angle, setAngle] = useState(ANGLES[0].label);
   const [product, setProduct] = useState('');
   const [style, setStyle] = useState('');
+  const [selectedStylePresets, setSelectedStylePresets] = useState<string[]>([]);
   const [typography, setTypography] = useState('');
+  const [selectedTypographyPresets, setSelectedTypographyPresets] = useState<string[]>([]);
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
@@ -245,9 +247,15 @@ Reglas para el prompt resultante:
                   key={index}
                   onClick={() => {
                     playClickSound();
-                    setStyle(prev => prev ? `${prev}, ${preset.value}` : preset.value);
+                    if (selectedStylePresets.includes(preset.label)) {
+                      setSelectedStylePresets(prev => prev.filter(l => l !== preset.label));
+                      setStyle(prev => prev.replace(new RegExp(`(, )?${preset.value}`, 'g'), '').replace(/^, /, ''));
+                    } else {
+                      setSelectedStylePresets(prev => [...prev, preset.label]);
+                      setStyle(prev => prev ? `${prev}, ${preset.value}` : preset.value);
+                    }
                   }}
-                  className="px-2 py-1 text-[9px] uppercase tracking-[1px] border border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white transition cursor-pointer"
+                  className={`px-2 py-1 text-[9px] uppercase tracking-[1px] border transition cursor-pointer ${selectedStylePresets.includes(preset.label) ? 'bg-theme-ink text-white border-theme-ink' : 'border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white'}`}
                   title={preset.value}
                 >
                   + {preset.label}
@@ -278,9 +286,15 @@ Reglas para el prompt resultante:
                   key={index}
                   onClick={() => {
                     playClickSound();
-                    setTypography(prev => prev ? `${prev}, ${preset.value}` : preset.value);
+                    if (selectedTypographyPresets.includes(preset.label)) {
+                      setSelectedTypographyPresets(prev => prev.filter(l => l !== preset.label));
+                      setTypography(prev => prev.replace(new RegExp(`(, )?${preset.value}`, 'g'), '').replace(/^, /, ''));
+                    } else {
+                      setSelectedTypographyPresets(prev => [...prev, preset.label]);
+                      setTypography(prev => prev ? `${prev}, ${preset.value}` : preset.value);
+                    }
                   }}
-                  className="px-2 py-1 text-[9px] uppercase tracking-[1px] border border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white transition cursor-pointer"
+                  className={`px-2 py-1 text-[9px] uppercase tracking-[1px] border transition cursor-pointer ${selectedTypographyPresets.includes(preset.label) ? 'bg-theme-ink text-white border-theme-ink' : 'border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white'}`}
                   title={preset.value}
                 >
                   + {preset.label}
