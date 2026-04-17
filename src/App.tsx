@@ -177,7 +177,7 @@ Reglas para el prompt resultante:
   };
 
   return (
-    <div className="min-h-screen bg-theme-bg text-theme-ink font-sans p-10 flex flex-col selection:bg-theme-accent/30 selection:text-theme-ink">
+    <div className="min-h-screen bg-theme-bg text-theme-ink font-sans p-4 md:p-10 flex flex-col selection:bg-theme-accent/30 selection:text-theme-ink">
       {/* Header */}
       <header className="flex justify-between items-end mb-[30px] border-b border-theme-ink pb-2.5">
         <div className="font-serif italic text-2xl font-light">
@@ -188,12 +188,11 @@ Reglas para el prompt resultante:
         </div>
       </header>
 
-      <main className="flex flex-col gap-10 flex-1 w-full max-w-5xl mx-auto">
+      <main className="flex flex-col gap-10 flex-1 w-full mx-auto md:max-w-none">
         
-        {/* Controls Panel (Workbench) */}
+       {/* Controls Panel (Workbench) */}
         <div className="bg-theme-paper p-[25px] rounded-[4px] shadow-[10px_10px_0px_rgba(0,0,0,0.05)] border border-[#ddd]">
-          
-          {/* Step 1 */}
+          {error && <p className="text-red-500 text-sm mb-4 text-center font-bold bg-white/50 p-2 rounded">{error}</p>}
           <div className="mb-[25px]">
             <span className="text-[11px] font-bold uppercase tracking-[1px] mb-[15px] block text-theme-accent">
               A. Ángulo de Venta
@@ -557,8 +556,6 @@ Reglas para el prompt resultante:
               </div>
             )}
           </div>
-          
-          {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
         </div>
         
       </main>
