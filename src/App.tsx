@@ -6,6 +6,7 @@ import {
   ThumbsUp, Flame, Network, Key, LayoutGrid, PackageOpen, 
   Hammer, Zap, Sun
 } from 'lucide-react';
+import { playClickSound } from './lib/audio';
 
 interface HistoryItem {
   id: string;
@@ -46,6 +47,11 @@ const STYLE_PRESETS = [
   { label: 'Estudio Brillante', value: 'Bright and airy photo studio, seamless white backdrop, soft diffused flat lighting' },
   { label: 'Granular Analógico', value: 'Vintage film camera grain, Kodak Portra 400 aesthetic, nostalgic, slight vignette' },
   { label: 'Humo y Sombras', value: 'Mysterious atmosphere, heavy fog, silhouetted shapes, cinematic rim lighting' },
+  { label: 'High-Tech Glassmorphism', value: 'Glassmorphism UI elements, blurred translucent surfaces, vibrant holographic highlights, minimalist tech aesthetic' },
+  { label: 'Arquitectura Brutalista', value: 'Brutalist concrete textures, stark angles, industrial aesthetic, dramatic lighting, high contrast' },
+  { label: '3D Renderizado Suave', value: 'Soft 3D render, clay texture, pastel colors, isometric view, soft diffused lighting, surreal and playful' },
+  { label: 'Sostenible / ECO', value: 'Sustainable eco-friendly aesthetic, lush greenery, natural sunlight, paper textures, warm and inviting atmosphere' },
+  { label: 'Futurismo Líquido', value: 'Liquid metal textures, iridescent chrome, fluid abstract shapes, soft ethereal lighting, futuristic and polished' }
 ];
 
 const TYPOGRAPHY_PRESETS = [
@@ -56,7 +62,12 @@ const TYPOGRAPHY_PRESETS = [
   { label: 'Vintage 70s', value: 'Vintage 70s chunky retro font, distressed texture' },
   { label: 'Cristal Esmerilado', value: 'Frosted glassmorphism text overlay, subtle drop shadow, blurred background behind text' },
   { label: 'Revista de Moda', value: 'Thin elegant editorial serif font, lots of kerning, sophisticated' },
-  { label: 'Urbano / Grafiti', value: 'Gritty street style graffiti font, spray paint texture' }
+  { label: 'Urbano / Grafiti', value: 'Gritty street style graffiti font, spray paint texture' },
+  { label: 'Minimalismo Futuro', value: 'Ultra-thin geometric sans-serif, high tracking, clean, airy, luxurious tech vibe' },
+  { label: 'Bauhaus Moderno', value: 'Geometric bold typography, primary shapes, structured layout, clean industrial aesthetic' },
+  { label: 'Tipografía Kinetic', value: 'Kinetic typography, motion blur effect on text, dynamic, energetic composition' },
+  { label: 'Relieve Profundo', value: 'Deep embossed 3D text, hard shadows, metallic finish, tactile high-contrast effect' },
+  { label: 'Estética Web3', value: 'Monospace clean font, glitch effect, tech-inspired, digital interface aesthetic' }
 ];
 
 export default function App() {
@@ -74,6 +85,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'current' | 'history'>('current');
 
   const handleGenerate = async () => {
+    playClickSound();
     if (!product || !style || !typography) {
       setError('Por favor, completa Producto/Servicio, Estilo Visual y Diseño de Títulos.');
       return;
@@ -135,9 +147,16 @@ Reglas para el prompt resultante:
         timestamp: new Date()
       };
       setHistory(prev => [newHistoryItem, ...prev]);
-    } catch (err) {
-      console.error(err);
-      setError('Hubo un error al generar el prompt. Verifica la consola para más detalles.');
+    } catch (err: any) {
+      const errorMessage = typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err);
+      
+      if (errorMessage.includes('429') || errorMessage.includes('RESOURCE_EXHAUSTED')) {
+        console.warn('Cuota de uso excedida (429).');
+        setError('¡Has excedido temporalmente la cuota de uso! Por favor, espera unos minutos e inténtalo de nuevo.');
+      } else {
+        console.error('Error durante la generación:', err);
+        setError('Hubo un error al generar el prompt. Inténtalo más tarde.');
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -167,7 +186,7 @@ Reglas para el prompt resultante:
         </div>
       </header>
 
-      <main className="grid grid-cols-1 md:grid-cols-[1fr_1.2fr] gap-10 flex-1">
+      <main className="flex flex-col gap-10 flex-1 w-full max-w-5xl mx-auto">
         
         {/* Controls Panel (Workbench) */}
         <div className="bg-theme-paper p-[25px] rounded-[4px] shadow-[10px_10px_0px_rgba(0,0,0,0.05)] border border-[#ddd]">
@@ -183,7 +202,10 @@ Reglas para el prompt resultante:
                 return (
                   <button
                     key={a.id}
-                    onClick={() => setAngle(a.label)}
+                    onClick={() => {
+                        playClickSound();
+                        setAngle(a.label);
+                    }}
                     title={a.description}
                     className={`p-3 text-[10px] border flex flex-col items-center justify-center space-y-2 cursor-pointer transition ${angle === a.label ? 'bg-theme-ink text-theme-bg border-theme-ink shadow-sm' : 'bg-transparent text-theme-ink border-[#ccc] hover:bg-black/5'}`}
                   >
@@ -221,7 +243,10 @@ Reglas para el prompt resultante:
               {STYLE_PRESETS.map((preset, index) => (
                 <button
                   key={index}
-                  onClick={() => setStyle(prev => prev ? `${prev}, ${preset.value}` : preset.value)}
+                  onClick={() => {
+                    playClickSound();
+                    setStyle(prev => prev ? `${prev}, ${preset.value}` : preset.value);
+                  }}
                   className="px-2 py-1 text-[9px] uppercase tracking-[1px] border border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white transition cursor-pointer"
                   title={preset.value}
                 >
@@ -251,7 +276,10 @@ Reglas para el prompt resultante:
               {TYPOGRAPHY_PRESETS.map((preset, index) => (
                 <button
                   key={index}
-                  onClick={() => setTypography(prev => prev ? `${prev}, ${preset.value}` : preset.value)}
+                  onClick={() => {
+                    playClickSound();
+                    setTypography(prev => prev ? `${prev}, ${preset.value}` : preset.value);
+                  }}
                   className="px-2 py-1 text-[9px] uppercase tracking-[1px] border border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white transition cursor-pointer"
                   title={preset.value}
                 >
@@ -274,20 +302,114 @@ Reglas para el prompt resultante:
           </div>
 
           {/* Live Preview of Input Structure */}
-          <div className="mt-[30px] p-[15px] bg-[#f9f9f9] border border-[#e5e5e5] rounded-[4px]">
-            <div className="flex items-center space-x-2 mb-[10px]">
-              <Sparkles className="w-3 h-3 text-theme-accent" />
-              <span className="text-[10px] font-bold uppercase tracking-[1px] text-theme-muted">
-                Vista Previa en Tiempo Real (Estructura Base)
+          <div className="mt-[30px] p-[20px] bg-[#0a0a0a] rounded-[8px] shadow-lg border border-[#222]">
+            {/* Generar Action Bar - Added here */}
+            <div className="mb-6 flex space-x-4">
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="flex-1 bg-theme-accent text-theme-ink border-none p-[15px] font-bold text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition opacity-90 hover:opacity-100 disabled:opacity-50"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Procesando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    <span>Generar Mega-Prompt</span>
+                  </>
+                )}
+              </button>
+
+              {generatedPrompt && (
+                <button
+                  onClick={copyToClipboard}
+                  className="flex-[0.5] bg-[#222] text-white border border-[#333] p-[15px] text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition hover:bg-[#333] font-bold"
+                  title="Copiar al portapapeles"
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  <span className="hidden sm:inline">{copied ? 'Copiado' : 'Copiar'}</span>
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between mb-[15px]">
+              <div className="flex items-center space-x-2">
+                <div className="flex space-x-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
+                </div>
+                <span className="text-[10px] font-mono text-[#666] ml-2">preview.mdj</span>
+              </div>
+              <span className="text-[9px] uppercase tracking-[1px] text-[#888] font-bold flex items-center">
+                 <div className="w-1.5 h-1.5 rounded-full bg-theme-accent animate-pulse mr-2"></div>
+                 Sintaxis en Vivo
+                 <button 
+                  onClick={async () => {
+                    const previewText = `/imagine prompt: ${angle ? `${ANGLES.find(a => a.label === angle)?.id || angle} shot` : '[Ángulo]'} of ${product || '[Producto/Servicio]'}, ${style || '[Entorno y Estilo Visual]'}, text overlay: "${typography || '[Tipografía y Textos]'}" --v 6.0 --ar 4:5 --style raw`;
+                    await navigator.clipboard.writeText(previewText);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="ml-3 px-2 py-0.5 bg-[#ffbd2e] text-black text-[9px] font-bold uppercase tracking-[1px] rounded hover:bg-[#ffbd2e]/90 transition px-2"
+                 >
+                   {copied ? 'Copiado!' : 'Copiar'}
+                 </button>
               </span>
             </div>
-            <div className="font-mono text-[11px] text-[#666] leading-relaxed break-words bg-white p-[10px] border border-[#eee] shadow-sm">
-              <span className="text-theme-accent">/imagine prompt:</span>{' '}
-              {angle ? `[${angle}]` : '[Ángulo]'} shot of{' '}
-              <span className="text-theme-ink font-semibold">{product || '[Producto/Servicio]'}</span>,{' '}
-              {style || '[Entorno y Estilo Visual]'},{' '}
-              text overlay: <span className="italic">"{typography || '[Tipografía y Textos]'}"</span>{' '}
-              <span className="text-[#aaa]">--v 6.0 --ar 4:5</span>
+            
+            <div className="font-mono text-[11.5px] leading-[2] break-words text-[#aaa] bg-[#111] p-4 rounded-md border border-[#1a1a1a]">
+              <span className="text-theme-accent font-bold">/imagine prompt:</span>{' '}
+              
+              {/* Angle */}
+              <span className={`px-1.5 py-0.5 rounded ${angle ? 'bg-[#2a2a2a] text-[#fff]' : 'border border-dashed border-[#444] text-[#555]'}`}>
+                 {angle ? `${ANGLES.find(a => a.label === angle)?.id || angle} shot` : '[Ángulo]'}
+              </span>
+              <span className="text-[#666]"> of </span>
+              
+              {/* Product */}
+              <span className={`px-1.5 py-0.5 font-bold rounded ${product ? 'text-[#fff] border-b border-[#fff]' : 'border border-dashed border-[#444] text-[#555]'}`}>
+                 {product || '[Producto/Servicio]'}
+              </span>
+              <span className="text-[#666]">, </span>
+              
+              {/* Style */}
+              <span className={`px-1.5 py-0.5 rounded ${style ? 'bg-[#1a2b3c] text-[#8ab4f8]' : 'border border-dashed border-[#444] text-[#555]'}`}>
+                 {style || '[Entorno y Estilo Visual]'}
+              </span>
+              <span className="text-[#666]">, </span>
+              
+              {/* Typography */}
+              <span className={`px-1.5 py-0.5 italic rounded ${typography ? 'bg-[#3c2a1a] text-[#f8b48a]' : 'border border-dashed border-[#444] text-[#555]'}`}>
+                 text overlay: "{typography || '[Tipografía y Textos]'}"
+              </span>
+              {' '}
+              
+              {/* Params */}
+              <span className="text-[#555] bg-[#1a1a1a] px-1.5 py-0.5 rounded">
+                 --v 6.0 --ar 4:5 --style raw
+              </span>
+            </div>
+            
+            {/* Status indicators */}
+            <div className="mt-4 pt-4 border-t border-[#222] flex justify-between items-center">
+               <div className="flex space-x-4 text-[9px] uppercase tracking-[2px] font-mono">
+                 <span className={`${product ? "text-[#27c93f]" : "text-[#555]"} flex items-center`}>
+                    <Check className={`w-3 h-3 mr-1 ${product ? 'opacity-100' : 'opacity-0'}`} /> SUJETO
+                 </span>
+                 <span className={`${style ? "text-[#27c93f]" : "text-[#555]"} flex items-center`}>
+                    <Check className={`w-3 h-3 mr-1 ${style ? 'opacity-100' : 'opacity-0'}`} /> ESTILO
+                 </span>
+                 <span className={`${typography ? "text-[#27c93f]" : "text-[#555]"} flex items-center`}>
+                    <Check className={`w-3 h-3 mr-1 ${typography ? 'opacity-100' : 'opacity-0'}`} /> TEXTOS
+                 </span>
+               </div>
+               <span className={`text-[9px] uppercase tracking-[1px] font-bold ${product && style && typography ? 'text-theme-accent' : 'text-[#555]'}`}>
+                 {product && style && typography ? 'Listo para Compilar' : 'Bloques Incompletos'}
+               </span>
             </div>
           </div>
         </div>
@@ -423,38 +545,6 @@ Reglas para el prompt resultante:
           </div>
           
           {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
-
-          <div className="mt-[20px] flex space-x-4">
-            <button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="flex-1 bg-theme-ink text-white border-none p-[15px] text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition opacity-90 hover:opacity-100 disabled:opacity-50"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Procesando...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  <span>Generar Mega-Prompt</span>
-                </>
-              )}
-            </button>
-
-            {generatedPrompt && (
-              <button
-                onClick={copyToClipboard}
-                className="flex-[0.5] bg-theme-accent text-theme-ink border-none p-[15px] text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition opacity-90 hover:opacity-100 font-bold"
-                title="Copiar al portapapeles"
-              >
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                <span className="hidden sm:inline">{copied ? 'Copiado' : 'Copiar'}</span>
-              </button>
-            )}
-          </div>
-
         </div>
         
       </main>
