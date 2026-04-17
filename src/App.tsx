@@ -3,7 +3,7 @@ import {
   Sparkles, Copy, Check, Loader2, ArrowRight, Clock, ChevronDown,
   Award, Camera, Smartphone, ZoomIn, Scale, ArrowRightLeft, 
   ThumbsUp, Flame, Network, Key, LayoutGrid, PackageOpen, 
-  Hammer, Zap, Sun
+  Hammer, Zap, Sun, FileDown, Trash2
 } from 'lucide-react';
 import { playClickSound } from './lib/audio';
 
@@ -80,23 +80,53 @@ const TYPOGRAPHY_PRESETS = [
 ];
 
 export default function App() {
-  const [angle, setAngle] = useState(ANGLES[0].label);
-  const [productTitle, setProductTitle] = useState('');
-  const [productSubtitle, setProductSubtitle] = useState('');
-  const [skinTone, setSkinTone] = useState('');
-  const [facialFeatures, setFacialFeatures] = useState('');
-  const [hair, setHair] = useState('');
-  const [bodyType, setBodyType] = useState('');
-  const [ethnicity, setEthnicity] = useState('');
-  const [expression, setExpression] = useState('');
-  const [age, setAge] = useState('');
-  const [position, setPosition] = useState('');
-  const [scenery, setScenery] = useState('');
-  const [productDescriptionCtx, setProductDescriptionCtx] = useState('');
-  const [style, setStyle] = useState('');
-  const [selectedStylePresets, setSelectedStylePresets] = useState<string[]>([]);
-  const [typography, setTypography] = useState('');
-  const [selectedTypographyPresets, setSelectedTypographyPresets] = useState<string[]>([]);
+  const [angle, setAngle] = useState(() => localStorage.getItem('angle') || ANGLES[0].label);
+  const [productTitle, setProductTitle] = useState(() => localStorage.getItem('productTitle') || '');
+  const [productSubtitle, setProductSubtitle] = useState(() => localStorage.getItem('productSubtitle') || '');
+  const [skinTone, setSkinTone] = useState(() => localStorage.getItem('skinTone') || '');
+  const [facialFeatures, setFacialFeatures] = useState(() => localStorage.getItem('facialFeatures') || '');
+  const [hair, setHair] = useState(() => localStorage.getItem('hair') || '');
+  const [bodyType, setBodyType] = useState(() => localStorage.getItem('bodyType') || '');
+  const [ethnicity, setEthnicity] = useState(() => localStorage.getItem('ethnicity') || '');
+  const [expression, setExpression] = useState(() => localStorage.getItem('expression') || '');
+  const [age, setAge] = useState(() => localStorage.getItem('age') || '');
+  const [position, setPosition] = useState(() => localStorage.getItem('position') || '');
+  const [scenery, setScenery] = useState(() => localStorage.getItem('scenery') || '');
+  const [productDescriptionCtx, setProductDescriptionCtx] = useState(() => localStorage.getItem('productDescriptionCtx') || '');
+  const [style, setStyle] = useState(() => localStorage.getItem('style') || '');
+  const [selectedStylePresets, setSelectedStylePresets] = useState<string[]>(() => JSON.parse(localStorage.getItem('selectedStylePresets') || '[]'));
+  const [typography, setTypography] = useState(() => localStorage.getItem('typography') || '');
+  const [selectedTypographyPresets, setSelectedTypographyPresets] = useState<string[]>(() => JSON.parse(localStorage.getItem('selectedTypographyPresets') || '[]'));
+  
+  // Persist form state
+  useEffect(() => {
+    localStorage.setItem('angle', angle);
+    localStorage.setItem('productTitle', productTitle);
+    localStorage.setItem('productSubtitle', productSubtitle);
+    localStorage.setItem('skinTone', skinTone);
+    localStorage.setItem('facialFeatures', facialFeatures);
+    localStorage.setItem('hair', hair);
+    localStorage.setItem('bodyType', bodyType);
+    localStorage.setItem('ethnicity', ethnicity);
+    localStorage.setItem('expression', expression);
+    localStorage.setItem('age', age);
+    localStorage.setItem('position', position);
+    localStorage.setItem('scenery', scenery);
+    localStorage.setItem('productDescriptionCtx', productDescriptionCtx);
+    localStorage.setItem('style', style);
+    localStorage.setItem('selectedStylePresets', JSON.stringify(selectedStylePresets));
+    localStorage.setItem('typography', typography);
+    localStorage.setItem('selectedTypographyPresets', JSON.stringify(selectedTypographyPresets));
+  }, [angle, productTitle, productSubtitle, skinTone, facialFeatures, hair, bodyType, ethnicity, expression, age, position, scenery, productDescriptionCtx, style, selectedStylePresets, typography, selectedTypographyPresets]);
+
+  const handleClearAll = () => {
+    if (window.confirm("Esta acción eliminará permanentemente todo tu progreso actual, incluyendo el historial. ¿Estás seguro?")) {
+      setHistory([]);
+      localStorage.clear();
+      window.location.reload();
+    }
+  };
+
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
@@ -189,6 +219,17 @@ Context: ${productDescriptionCtx}`;
       // Fallback
       console.error("Failed to copy", err);
     }
+  };
+
+  const handleExport = () => {
+    if (!generatedPrompt) return;
+    const element = document.createElement("a");
+    const file = new Blob([generatedPrompt], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `prompt_${productTitle?.replace(/\s+/g, '_') || 'generado'}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
   };
 
   return (
@@ -528,14 +569,24 @@ Context: ${productDescriptionCtx}`;
               </button>
 
               {generatedPrompt && (
-                <button
-                  onClick={copyToClipboard}
-                  className="flex-[0.5] bg-[#222] text-white border border-[#333] p-[15px] text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition hover:bg-[#333] font-bold"
-                  title="Copiar al portapapeles"
-                >
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  <span className="hidden sm:inline">{copied ? 'Copiado' : 'Copiar'}</span>
-                </button>
+                <>
+                  <button
+                    onClick={copyToClipboard}
+                    className="flex-[0.5] bg-[#222] text-white border border-[#333] p-[15px] text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition hover:bg-[#333] font-bold"
+                    title="Copiar al portapapeles"
+                  >
+                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    <span className="hidden sm:inline">{copied ? 'Copiado' : 'Copiar'}</span>
+                  </button>
+                  <button
+                    onClick={handleExport}
+                    className="flex-[0.5] bg-[#222] text-white border border-[#333] p-[15px] text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition hover:bg-[#333] font-bold"
+                    title="Exportar a archivo"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    <span className="hidden sm:inline">Exportar</span>
+                  </button>
+                </>
               )}
             </div>
 
@@ -758,9 +809,20 @@ Context: ${productDescriptionCtx}`;
       </main>
 
       {/* Footer */}
-      <footer className="mt-[20px] text-[10px] text-theme-muted flex justify-between">
-        <div>Diseñado para Directores de Arte y Creadores de Contenido</div>
-        <div>© 2026 Mesa de Trabajo Modular</div>
+      <footer className="mt-[40px] mb-[60px] text-[10px] text-theme-muted flex flex-col items-center gap-4">
+        <div className="flex justify-between w-full">
+          <div>Diseñado para Directores de Arte y Creadores de Contenido</div>
+          <div>© 2026 Mesa de Trabajo Modular</div>
+        </div>
+        <button 
+          onClick={handleClearAll} 
+          className="flex items-center space-x-2 bg-red-600 text-white px-6 py-3 rounded text-[12px] uppercase tracking-wider font-bold hover:bg-red-700 hover:scale-105 transition-all duration-200 ease-in-out shadow-md"
+        >
+          <Trash2 className="w-4 h-4"/> <span>Borrar todo</span>
+        </button>
+        <p className="max-w-md text-center">
+          <strong>Nota:</strong> "Borrar todo" elimina permanentemente todo tu progreso actual, incluyendo campos del formulario e historial almacenado en el navegador. Utilízalo solo para reiniciar el sistema desde cero.
+        </p>
       </footer>
     </div>
   );
