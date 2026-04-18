@@ -3,7 +3,7 @@ import {
   Sparkles, Copy, Check, Loader2, ArrowRight, Clock, ChevronDown,
   Award, Camera, Smartphone, ZoomIn, Scale, ArrowRightLeft, 
   ThumbsUp, Flame, Network, Key, LayoutGrid, PackageOpen, 
-  Hammer, Zap, Sun, FileDown, Trash2
+  Hammer, Zap, Sun, FileDown, Trash2, Heart, RefreshCcw, HelpCircle, X
 } from 'lucide-react';
 import { playClickSound } from './lib/audio';
 
@@ -95,8 +95,10 @@ export default function App() {
   const [productDescriptionCtx, setProductDescriptionCtx] = useState(() => localStorage.getItem('productDescriptionCtx') || '');
   const [style, setStyle] = useState(() => localStorage.getItem('style') || '');
   const [selectedStylePresets, setSelectedStylePresets] = useState<string[]>(() => JSON.parse(localStorage.getItem('selectedStylePresets') || '[]'));
-  const [typography, setTypography] = useState(() => localStorage.getItem('typography') || '');
+  const [typography, setTypography] = useState(() => localStorage.getItem('typography') || 'sin texto');
   const [selectedTypographyPresets, setSelectedTypographyPresets] = useState<string[]>(() => JSON.parse(localStorage.getItem('selectedTypographyPresets') || '[]'));
+  const [favoriteStyles, setFavoriteStyles] = useState<string[]>(() => JSON.parse(localStorage.getItem('favoriteStyles') || '[]'));
+  const [activeModalAngle, setActiveModalAngle] = useState<any>(null);
   
   // Persist form state
   useEffect(() => {
@@ -117,7 +119,22 @@ export default function App() {
     localStorage.setItem('selectedStylePresets', JSON.stringify(selectedStylePresets));
     localStorage.setItem('typography', typography);
     localStorage.setItem('selectedTypographyPresets', JSON.stringify(selectedTypographyPresets));
-  }, [angle, productTitle, productSubtitle, skinTone, facialFeatures, hair, bodyType, ethnicity, expression, age, position, scenery, productDescriptionCtx, style, selectedStylePresets, typography, selectedTypographyPresets]);
+    localStorage.setItem('favoriteStyles', JSON.stringify(favoriteStyles));
+  }, [angle, productTitle, productSubtitle, skinTone, facialFeatures, hair, bodyType, ethnicity, expression, age, position, scenery, productDescriptionCtx, style, selectedStylePresets, typography, selectedTypographyPresets, favoriteStyles]);
+
+  const toggleFavoriteStyle = (label: string) => {
+    setFavoriteStyles(prev => 
+      prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]
+    );
+  };
+  
+  const sortedStylePresets = [...STYLE_PRESETS].sort((a, b) => {
+    const aFav = favoriteStyles.includes(a.label);
+    const bFav = favoriteStyles.includes(b.label);
+    if (aFav && !bFav) return -1;
+    if (!aFav && bFav) return 1;
+    return 0;
+  });
 
   const handleClearAll = () => {
     if (window.confirm("Esta acción eliminará permanentemente todo tu progreso actual, incluyendo el historial. ¿Estás seguro?")) {
@@ -232,6 +249,18 @@ Context: ${productDescriptionCtx}`;
     document.body.removeChild(element);
   };
 
+  const deleteHistoryItem = (id: string) => {
+    setHistory(prev => prev.filter(item => item.id !== id));
+  };
+  
+  const loadHistoryItem = (item: HistoryItem) => {
+    setAngle(item.angle);
+    setProductTitle(item.product);
+    setStyle(item.style);
+    setTypography(item.typography);
+    setActiveTab('current');
+  };
+
   return (
     <div className="min-h-screen bg-theme-bg text-theme-ink font-sans p-4 md:p-10 flex flex-col selection:bg-theme-accent/30 selection:text-theme-ink">
       {/* Header */}
@@ -275,8 +304,14 @@ Context: ${productDescriptionCtx}`;
                         setAngle(a.label);
                     }}
                     title={a.description}
-                    className={`p-4 text-xs border flex flex-col items-center justify-center space-y-2 cursor-pointer transition ${angle === a.label ? 'bg-theme-ink text-theme-bg border-theme-ink shadow-sm' : 'bg-transparent text-theme-ink border-[#ccc] hover:bg-black/5'}`}
+                    className={`relative p-4 text-xs border flex flex-col items-center justify-center space-y-2 cursor-pointer transition ${angle === a.label ? 'bg-theme-ink text-theme-bg border-theme-ink shadow-sm' : 'bg-transparent text-theme-ink border-[#ccc] hover:bg-black/5'}`}
                   >
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setActiveModalAngle(a); }}
+                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-black"
+                    >
+                      <HelpCircle size={14} />
+                    </button>
                     <Icon className={`w-6 h-6 ${angle === a.label ? 'opacity-100 text-theme-accent' : 'opacity-60 text-theme-ink'}`} />
                     <span className="text-center font-medium">[ {a.label} ]</span>
                   </button>
@@ -292,6 +327,63 @@ Context: ${productDescriptionCtx}`;
                   {ANGLES.find(a => a.label === angle)?.type}
                 </span>
               </div>
+            </div>
+          </div>
+
+          {/* Estilo Visual y Entorno */}
+          <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm">
+            <span className="text-base font-bold uppercase tracking-[1px] mb-[15px] block text-theme-ink flex items-center">
+              <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
+              3) Estilo Visual y Entorno
+            </span>
+            <div className="flex flex-wrap gap-2 mb-[10px]">
+              {sortedStylePresets.map((preset) => (
+                <div key={preset.label} className="relative inline-flex">
+                  <button
+                    type="button"
+                    onClick={() => toggleFavoriteStyle(preset.label)}
+                    className="absolute -top-1 -right-1 p-0.5 z-10 bg-white rounded-full border border-gray-200"
+                  >
+                    <Heart size={10} className={favoriteStyles.includes(preset.label) ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
+                  </button>
+                  <button
+                    onClick={() => {
+                        playClickSound();
+                        if (selectedStylePresets.includes(preset.label)) {
+                          setSelectedStylePresets(prev => prev.filter(l => l !== preset.label));
+                          setStyle(prev => prev.replace(new RegExp(`(, )?${preset.value}`, 'g'), '').replace(/^, /, ''));
+                        } else {
+                          setSelectedStylePresets(prev => [...prev, preset.label]);
+                          setStyle(prev => prev ? `${prev}, ${preset.value}` : preset.value);
+                        }
+                    }}
+                    className={`pl-3 pr-6 py-2 text-xs uppercase tracking-[1px] border transition cursor-pointer ${selectedStylePresets.includes(preset.label) ? 'bg-theme-ink text-white border-theme-ink' : 'border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white'}`}
+                    title={preset.description}
+                  >
+                    + {preset.label}
+                  </button>
+                </div>
+              ))}
+            </div>
+            <textarea
+              placeholder="Ej. Fotografía editorial, luz de atardecer, grano de película fino. Cinematic lighting, dramatic shadows."
+              rows={3}
+              value={style}
+              onChange={(e) => setStyle(e.target.value)}
+              className="w-full p-2.5 border border-dashed border-[#ccc] font-serif italic text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa] resize-none"
+            />
+            {selectedStylePresets.length > 0 && (
+              <div className="bg-[#f4f4f4] border-l-4 border-theme-accent p-3 mt-3 rounded-r-md">
+                <p className="text-theme-ink text-xs font-serif leading-relaxed">
+                  {selectedStylePresets.map(label => {
+                    const preset = STYLE_PRESETS.find(p => p.label === label);
+                    return preset ? <span key={label} className="block mb-1"><strong>{label}:</strong> {preset.description}</span> : null;
+                  })}
+                </p>
+              </div>
+            )}
+            <div className="mt-3 text-[11px] text-theme-muted font-sans bg-[#f9f9f9] p-2 rounded">
+              <strong>Tip:</strong> Puedes combinar estilos o escribir especificaciones personalizadas.
             </div>
           </div>
 
@@ -447,60 +539,12 @@ Context: ${productDescriptionCtx}`;
             />
           </div>
 
-          {/* Step 3 */}
-          <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm">
-            <span className="text-base font-bold uppercase tracking-[1px] mb-[10px] block text-theme-ink flex items-center">
-              <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
-              3) Estilo Visual y Entorno
-            </span>
-            <div className="flex flex-wrap gap-2 mb-[10px]">
-              {STYLE_PRESETS.map((preset, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    playClickSound();
-                    if (selectedStylePresets.includes(preset.label)) {
-                      setSelectedStylePresets(prev => prev.filter(l => l !== preset.label));
-                      setStyle(prev => prev.replace(new RegExp(`(, )?${preset.value}`, 'g'), '').replace(/^, /, ''));
-                    } else {
-                      setSelectedStylePresets(prev => [...prev, preset.label]);
-                      setStyle(prev => prev ? `${prev}, ${preset.value}` : preset.value);
-                    }
-                  }}
-                  className={`px-4 py-2 text-xs uppercase tracking-[1px] border transition cursor-pointer ${selectedStylePresets.includes(preset.label) ? 'bg-theme-ink text-white border-theme-ink' : 'border-[#ccc] text-theme-ink bg-transparent hover:bg-theme-ink hover:text-white'}`}
-                  title={preset.description}
-                >
-                  + {preset.label}
-                </button>
-              ))}
-            </div>
-            <textarea
-              placeholder="Ej. Fotografía editorial, luz de atardecer, grano de película fino. Cinematic lighting, dramatic shadows."
-              rows={3}
-              value={style}
-              onChange={(e) => setStyle(e.target.value)}
-              className="w-full p-2.5 border border-dashed border-[#ccc] font-serif italic text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa] resize-none"
-            />
-            {selectedStylePresets.length > 0 && (
-              <div className="bg-[#f4f4f4] border-l-4 border-theme-accent p-3 mt-3 rounded-r-md">
-                <p className="text-theme-ink text-xs font-serif leading-relaxed">
-                  {selectedStylePresets.map(label => {
-                    const preset = STYLE_PRESETS.find(p => p.label === label);
-                    return preset ? <span key={label} className="block mb-1"><strong>{label}:</strong> {preset.description}</span> : null;
-                  })}
-                </p>
-              </div>
-            )}
-            <div className="mt-3 text-[11px] text-theme-muted font-sans bg-[#f9f9f9] p-2 rounded">
-              <strong>Tip:</strong> Puedes combinar estilos o escribir especificaciones personalizadas.
-            </div>
-          </div>
 
           {/* Step 4 */}
           <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm">
             <span className="text-base font-bold uppercase tracking-[1px] mb-[10px] block text-theme-ink flex items-center">
               <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
-              4) Diseño de Títulos y Tipografía
+              4) Estilo de Títulos (Tipografía)
             </span>
             <div className="flex flex-wrap gap-2 mb-[10px]">
               <button
@@ -580,11 +624,10 @@ Context: ${productDescriptionCtx}`;
                   </button>
                   <button
                     onClick={handleExport}
-                    className="flex-[0.5] bg-[#222] text-white border border-[#333] p-[15px] text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition hover:bg-[#333] font-bold"
+                    className="flex-[0.2] bg-[#222] text-white border border-[#333] px-3 p-[15px] text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center transition hover:bg-[#333] font-bold"
                     title="Exportar a archivo"
                   >
                     <FileDown className="w-4 h-4" />
-                    <span className="hidden sm:inline">Exportar</span>
                   </button>
                 </>
               )}
@@ -735,18 +778,20 @@ Context: ${productDescriptionCtx}`;
                          </div>
                          
                          <div className="flex items-center space-x-3 shrink-0">
-                           <div className="hidden lg:flex items-center space-x-2">
-                              {item.style && (
-                                <span className="text-[9px] text-[#aaa] bg-[#111] px-1.5 py-0.5 rounded border border-[#333] truncate max-w-[120px]" title={item.style}>
-                                  Es: {item.style}
-                                </span>
-                              )}
-                              {item.typography && (
-                                <span className="text-[9px] text-[#aaa] bg-[#111] px-1.5 py-0.5 rounded border border-[#333] truncate max-w-[120px]" title={item.typography}>
-                                  Ty: {item.typography}
-                                </span>
-                              )}
-                           </div>
+                            <button
+                                onClick={() => loadHistoryItem(item)}
+                                className="text-gray-400 hover:text-white p-1"
+                                title="Cargar prompt"
+                            >
+                                <RefreshCcw size={14} />
+                            </button>
+                            <button
+                                onClick={() => deleteHistoryItem(item.id)}
+                                className="text-gray-400 hover:text-red-500 p-1"
+                                title="Eliminar del historial"
+                            >
+                                <Trash2 size={14} />
+                            </button>
                            <span className="text-[#666] group-open:rotate-180 transition-transform">
                              <ChevronDown className="w-4 h-4" />
                            </span>
@@ -824,6 +869,18 @@ Context: ${productDescriptionCtx}`;
           <strong>Nota:</strong> "Borrar todo" elimina permanentemente todo tu progreso actual, incluyendo campos del formulario e historial almacenado en el navegador. Utilízalo solo para reiniciar el sistema desde cero.
         </p>
       </footer>
+      {/* Modal for Angles Description */}
+      {activeModalAngle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setActiveModalAngle(null)}>
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-lg">{activeModalAngle.label}</h3>
+              <button className="text-gray-500 hover:text-black p-1" onClick={() => setActiveModalAngle(null)}><X size={20}/></button>
+            </div>
+            <p className="text-sm text-gray-700 leading-relaxed">{activeModalAngle.description}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
