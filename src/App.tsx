@@ -96,6 +96,33 @@ export default function App() {
   const [style, setStyle] = useState(() => localStorage.getItem('style') || '');
   const [selectedStylePresets, setSelectedStylePresets] = useState<string[]>(() => JSON.parse(localStorage.getItem('selectedStylePresets') || '[]'));
   const [typography, setTypography] = useState(() => localStorage.getItem('typography') || 'sin texto');
+const VEO_SCENE_DESCRIPTIONS: Record<string, string> = {
+  'Caminar hacia cámara': 'El sujeto se aproxima progresivamente, creando una sensación de encuentro directo.',
+  'Correr de perfil': 'Movimiento dinámico lateral, ideal para transmitir velocidad y energía.',
+  'Giro 360 grados': 'Cámara rotando alrededor de un sujeto u objeto para una perspectiva completa.',
+  'Acción de señalar producto': 'El sujeto dirige la atención del espectador hacia el producto de forma clara.',
+  'Salto de entusiasmo': 'Movimiento explosivo hacia arriba que transmite alegría o euforia.',
+  'Zoom in lento a rostro': 'Enfoque gradual hacia los rasgos faciales para capturar emociones.',
+  'Zoom out rápido a escena': 'Apertura de plano para revelar el contexto o escenario tras ver al sujeto.',
+  'Panorámica de paisaje': 'Movimiento fluido de cámara para mostrar la amplitud del entorno.',
+  'Acción de beber/comer': 'Acción cotidiana que humaniza al sujeto frente al producto.',
+  'Uso de producto con manos': 'Primer plano enfocado en la interacción táctil con el producto.',
+  'Bailar con energía': 'Movimiento libre y dinámico para transmitir vitalidad.',
+  'Pose estática a movimiento': 'Contraste entre pausa y comienzo de acción para generar impacto.',
+  'Carrera hacia el horizonte': 'Movimiento alejado que evoca superación o metas.',
+  'Objeto interactuando con sujeto': 'El objeto cobra vida en manos del sujeto.',
+  'Sujeto mirando al infinito': 'Transmite profundidad, pensamiento o aspiración.',
+  'Acción de escribir/trabajar': 'Muestra el producto en un contexto de productividad o utilidad.',
+  'Transición rápida de escena': 'Cambio dinámico para mantener el ritmo del vídeo.',
+  'Movimiento en cámara lenta': 'Ideal para dramatizar momentos y resaltar detalles.',
+  'Gestos de sorpresa': 'Captura emoción intensa ante el descubrimiento del producto.',
+  'Mirada directa a cámara': 'Crea una conexión personal e inmediata con el usuario.',
+  'Apertura de puerta': 'Acción de entrada o revelación de un espacio.',
+  'Caída de producto': 'Atractivo visual si el producto es sólido o estético.',
+  'Escalada de sujeto': 'Movimiento vertical que evoca superación o esfuerzo.',
+  'Caminar bajo lluvia': 'Añade atmósfera, realismo y carga emocional.',
+  'Sujeto saltando obstáculos': 'Demuestra superación de retos mediante el producto.'
+};
   const [selectedTypographyPresets, setSelectedTypographyPresets] = useState<string[]>(() => JSON.parse(localStorage.getItem('selectedTypographyPresets') || '[]'));
   const [favoriteStyles, setFavoriteStyles] = useState<string[]>(() => JSON.parse(localStorage.getItem('favoriteStyles') || '[]'));
   const [activeModalAngle, setActiveModalAngle] = useState<any>(null);
@@ -147,7 +174,11 @@ export default function App() {
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const [generatedVideoPrompt, setGeneratedVideoPrompt] = useState('');
+  const [voiceOver, setVoiceOver] = useState(() => localStorage.getItem('voiceOver') || '');
+  const [videoScene, setVideoScene] = useState(() => localStorage.getItem('videoScene') || '');
   const [copied, setCopied] = useState(false);
+  const [videoCopied, setVideoCopied] = useState(false);
   const [error, setError] = useState('');
   
   const [history, setHistory] = useState<HistoryItem[]>(() => {
@@ -226,6 +257,62 @@ Context: ${productDescriptionCtx}`;
     setIsGenerating(false);
   };
 
+  const handleGenerateVideo = () => {
+    playClickSound();
+    if (!style) {
+      setError('Por favor, completa al menos el Estilo Visual.');
+      return;
+    }
+    
+    setError('');
+    
+    const selectedAngle = ANGLES.find(a => a.label === angle);
+    const protagonistDetails = [age, skinTone, ethnicity, bodyType, hair, expression, position, facialFeatures].filter(Boolean).join(', ');
+    
+    // Construct prompt for Veo 3.1 Pro in Spanish with structured blocks
+    const prompt = `Guion Cinematográfico para Vídeo (Veo 3.1 Pro):
+
+### 1. Contexto del Producto
+- Contexto: ${productDescriptionCtx || 'Vídeo promocional de alta calidad.'}
+- Producto: ${productTitle || 'Producto'} - ${productSubtitle || ''}
+
+### 2. Información de Sujetos y Acciones
+- Protagonistas: ${protagonistDetails || 'No especificado.'}
+- Posición: ${position || 'No especificado.'}
+- Expresión: ${expression || 'No especificado.'}
+- Escena de Movimiento: ${videoScene || 'Acción genérica.'}
+
+### 3. Configuración Escénica
+- Entorno: ${scenery || 'Estudio profesional'}
+- Iluminación: ${style.includes('luz') ? style : style + ', luz cinematográfica'}
+
+### 4. Cinematografía y Estilo
+- Ángulo: ${selectedAngle?.label || angle}
+- Estilo Visual: ${style}
+
+---
+
+### 5. Cronología de Escenas
+
+[00s - 02s] Encuadre inicial: ${selectedAngle?.label || angle} shot. Plano general mostrando a ${protagonistDetails.split(', ')[0] || 'el sujeto'} interactuando con ${productTitle}. Escena: ${videoScene || 'Acción inicial'}.
+
+[02s - 05s] Desarrollo de acción: Se observa ${protagonistDetails}. Movimiento de cámara fluido, estilo visual: ${style}.
+
+[05s - 08s] Cierre: Enfoque detallado en el producto con tipografía integrada: ${typography || 'limpio/minimalista'}. 
+
+---
+
+### 6. Audio y Voz (Voiceover)
+- Guion de voz: ${voiceOver ? `"${voiceOver}"` : 'Sin voz (Vídeo musical/ambiente).'}
+
+### 7. Especificaciones Técnicas
+- Alta calidad, hiperrealista, 4k, movimiento fluido, iluminación fotorrealista, gradación de color profesional.
+- Veo 3.1 Pro - Formato: Cine.`;
+
+    setGeneratedVideoPrompt(prompt);
+    setActiveTab('current');
+  };
+
   const copyToClipboard = async () => {
     if (!generatedPrompt) return;
     try {
@@ -264,23 +351,16 @@ Context: ${productDescriptionCtx}`;
   return (
     <div className="min-h-screen bg-theme-bg text-theme-ink font-sans p-4 md:p-10 flex flex-col selection:bg-theme-accent/30 selection:text-theme-ink">
       {/* Header */}
-      <header className="flex justify-between items-center mb-[40px] p-6 bg-white rounded-2xl shadow-sm border border-[#eee]">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center shadow-md">
-            <span className="text-2xl">🍌</span>
-          </div>
-          <div>
-            <h1 className="text-xl font-medium tracking-tight text-theme-ink uppercase">
-              Sistema Modular de Prompts
-            </h1>
-            <p className="text-xs font-medium uppercase tracking-[2px] text-theme-accent">
-              Powered by Nano Banana
-            </p>
-          </div>
+      <header className="flex flex-col items-center justify-center mb-[40px] p-8 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-sm border border-[#eee] text-center">
+        <div className="w-16 h-16 rounded-2xl bg-yellow-400 flex items-center justify-center shadow-lg mb-4 transform rotate-3 hover:rotate-0 transition-transform">
+          <span className="text-3xl">🍌</span>
         </div>
-        <div className="hidden sm:block text-[10px] uppercase tracking-[2px] font-bold text-[#aaa] bg-[#f8f8f8] px-3 py-1 rounded-full border border-[#eee]">
-          Engine: Gemini Driven
-        </div>
+        <h1 className="text-2xl font-extrabold tracking-tighter text-theme-ink uppercase mb-1">
+          Sistema Modular de Prompts
+        </h1>
+        <p className="text-[10px] font-bold uppercase tracking-[3px] text-theme-accent bg-theme-accent/10 px-3 py-1 rounded-full">
+          Powered by Nano Banana
+        </p>
       </header>
 
       <main className="flex flex-col gap-10 flex-1 w-full mx-auto md:max-w-none">
@@ -306,12 +386,12 @@ Context: ${productDescriptionCtx}`;
                     title={a.description}
                     className={`relative p-4 text-xs border flex flex-col items-center justify-center space-y-2 cursor-pointer transition ${angle === a.label ? 'bg-theme-ink text-theme-bg border-theme-ink shadow-sm' : 'bg-transparent text-theme-ink border-[#ccc] hover:bg-black/5'}`}
                   >
-                    <button 
+                    <div 
                       onClick={(e) => { e.stopPropagation(); setActiveModalAngle(a); }}
-                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-black"
+                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-black cursor-pointer"
                     >
                       <HelpCircle size={14} />
-                    </button>
+                    </div>
                     <Icon className={`w-6 h-6 ${angle === a.label ? 'opacity-100 text-theme-accent' : 'opacity-60 text-theme-ink'}`} />
                     <span className="text-center font-medium">[ {a.label} ]</span>
                   </button>
@@ -475,7 +555,7 @@ Context: ${productDescriptionCtx}`;
             </div>
             <input
               type="text"
-              placeholder="Escenario o ambiente..."
+              placeholder="Ej. Estudio iluminado cálidamente al atardecer, condiciones atmosféricas, luz lateral dramática..."
               value={scenery}
               onChange={(e) => setScenery(e.target.value)}
               className="w-full p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa]"
@@ -591,6 +671,58 @@ Context: ${productDescriptionCtx}`;
             </div>
           </div>
 
+          {/* Step 5 */}
+          <div className="mb-[25px] p-5 bg-white border border-[#eee] rounded-xl shadow-sm space-y-4">
+             <span className="text-base font-bold uppercase tracking-[1px] block text-theme-ink flex items-center">
+              <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
+              5) Secuencia para VEO 3.1 Pro
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {['Caminar hacia cámara', 'Correr de perfil', 'Giro 360 grados', 'Acción de señalar producto', 'Salto de entusiasmo', 'Zoom in lento a rostro', 'Zoom out rápido a escena', 'Panorámica de paisaje', 'Acción de beber/comer', 'Uso de producto con manos', 'Bailar con energía', 'Pose estática a movimiento', 'Carrera hacia el horizonte', 'Objeto interactuando con sujeto', 'Sujeto mirando al infinito', 'Acción de escribir/trabajar', 'Transición rápida de escena', 'Movimiento en cámara lenta', 'Gestos de sorpresa', 'Mirada directa a cámara', 'Apertura de puerta', 'Caída de producto', 'Escalada de sujeto', 'Caminar bajo lluvia', 'Sujeto saltando obstáculos'].map((scene) => (
+                <button
+                  key={scene}
+                  onClick={() => setVideoScene(scene)}
+                  className={`px-3 py-2 text-xs font-medium border transition-colors ${
+                    videoScene === scene 
+                      ? 'bg-black text-white border-black' 
+                      : 'bg-white text-gray-700 border-[#ccc] hover:border-black'
+                  }`}
+                >
+                  {scene}
+                </button>
+              ))}
+            </div>
+            {videoScene && (
+              <div className="mt-3 p-3 bg-theme-accent/10 border border-theme-accent/20 rounded-md">
+                <p className="text-xs font-semibold text-theme-ink leading-relaxed">
+                  <span className="text-theme-accent uppercase tracking-wider">Acción: </span>
+                  {VEO_SCENE_DESCRIPTIONS[videoScene]}
+                </p>
+              </div>
+            )}
+            <div className="mt-4">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-[1px] mb-2 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                Guion de voz (Voiceover)
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <span className="text-xs">🎤</span>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Ej. 'Descubre la revolución que cambiará tu rutina...'"
+                  value={voiceOver}
+                  onChange={(e) => setVoiceOver(e.target.value)}
+                  className="w-full pl-9 p-3 border border-[#ccc] text-sm text-[#444] bg-white outline-none focus:border-theme-ink focus:ring-1 focus:ring-theme-ink transition-all placeholder-[#aaa]"
+                />
+              </div>
+            </div>
+            <div className="mt-2 text-[10px] text-theme-muted font-sans leading-relaxed">
+              <strong>Nota:</strong> Selecciona el movimiento que quieres que realice tu protagonista o producto en el vídeo. Si agregas un guion de voz, este se incorporará al prompt para guiar la intención comunicativa de VEO 3.1 Pro.
+            </div>
+          </div>
+
           {/* Live Preview of Input Structure */}
           <div className="mt-[30px] p-[20px] bg-[#0a0a0a] rounded-[8px] shadow-lg border border-[#222]">
             <div className="fixed bottom-0 left-0 w-full p-4 bg-[#0a0a0a] border-t border-[#222] flex space-x-4 z-50">
@@ -610,6 +742,13 @@ Context: ${productDescriptionCtx}`;
                     <span>Generar Mega-Prompt</span>
                   </>
                 )}
+              </button>
+              <button
+                onClick={handleGenerateVideo}
+                disabled={isGenerating}
+                className="flex-1 bg-gray-700 text-white border-none p-[15px] font-bold text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition opacity-90 hover:opacity-100 disabled:opacity-50"
+              >
+                <span>Generar Vídeo Prompt (Veo)</span>
               </button>
 
               {generatedPrompt && (
@@ -698,6 +837,26 @@ Context: ${productDescriptionCtx}`;
               </span>
             </div>
             
+            {/* Display generated video prompt */}
+            {generatedVideoPrompt && (
+              <div className="font-mono text-[11.5px] leading-[2] break-words text-[#8ab4f8] bg-[#1a2b3c] p-4 rounded-md border border-[#1a2b3c] mt-4">
+                 <div className="flex justify-between items-center mb-2">
+                   <span className="text-white font-bold">Veo 3.1 Pro Video Prompt:</span>
+                   <button
+                    onClick={async () => {
+                        await navigator.clipboard.writeText(generatedVideoPrompt);
+                        setVideoCopied(true);
+                        setTimeout(() => setVideoCopied(false), 2000);
+                    }}
+                    className="px-2 py-1 bg-[#222] text-white text-[9px] font-bold uppercase tracking-[1px] rounded hover:bg-[#333] transition"
+                  >
+                    {videoCopied ? 'Copiado!' : 'Copiar Vídeo Prompt'}
+                  </button>
+                 </div>
+                 {generatedVideoPrompt}
+              </div>
+            )}
+
             {/* Status indicators */}
             <div className="mt-4 pt-4 border-t border-[#222] flex justify-between items-center">
                <div className="flex space-x-4 text-[9px] uppercase tracking-[2px] font-mono">
