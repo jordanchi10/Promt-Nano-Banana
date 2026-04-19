@@ -79,23 +79,6 @@ const TYPOGRAPHY_PRESETS = [
   { label: 'Estética Web3', value: 'Monospace clean font, glitch effect, tech-inspired, digital interface aesthetic' }
 ];
 
-export default function App() {
-  const [angle, setAngle] = useState(() => localStorage.getItem('angle') || ANGLES[0].label);
-  const [productTitle, setProductTitle] = useState(() => localStorage.getItem('productTitle') || '');
-  const [productSubtitle, setProductSubtitle] = useState(() => localStorage.getItem('productSubtitle') || '');
-  const [skinTone, setSkinTone] = useState(() => localStorage.getItem('skinTone') || '');
-  const [facialFeatures, setFacialFeatures] = useState(() => localStorage.getItem('facialFeatures') || '');
-  const [hair, setHair] = useState(() => localStorage.getItem('hair') || '');
-  const [bodyType, setBodyType] = useState(() => localStorage.getItem('bodyType') || '');
-  const [ethnicity, setEthnicity] = useState(() => localStorage.getItem('ethnicity') || '');
-  const [expression, setExpression] = useState(() => localStorage.getItem('expression') || '');
-  const [age, setAge] = useState(() => localStorage.getItem('age') || '');
-  const [position, setPosition] = useState(() => localStorage.getItem('position') || '');
-  const [scenery, setScenery] = useState(() => localStorage.getItem('scenery') || '');
-  const [productDescriptionCtx, setProductDescriptionCtx] = useState(() => localStorage.getItem('productDescriptionCtx') || '');
-  const [style, setStyle] = useState(() => localStorage.getItem('style') || '');
-  const [selectedStylePresets, setSelectedStylePresets] = useState<string[]>(() => JSON.parse(localStorage.getItem('selectedStylePresets') || '[]'));
-  const [typography, setTypography] = useState(() => localStorage.getItem('typography') || 'sin texto');
 const VEO_SCENE_DESCRIPTIONS: Record<string, string> = {
   'Caminar hacia cámara': 'El sujeto se aproxima progresivamente, creando una sensación de encuentro directo.',
   'Correr de perfil': 'Movimiento dinámico lateral, ideal para transmitir velocidad y energía.',
@@ -123,6 +106,25 @@ const VEO_SCENE_DESCRIPTIONS: Record<string, string> = {
   'Caminar bajo lluvia': 'Añade atmósfera, realismo y carga emocional.',
   'Sujeto saltando obstáculos': 'Demuestra superación de retos mediante el producto.'
 };
+
+export default function App() {
+  const [angle, setAngle] = useState(() => localStorage.getItem('angle') || ANGLES[0].label);
+  const [productTitle, setProductTitle] = useState(() => localStorage.getItem('productTitle') || '');
+  const [productSubtitle, setProductSubtitle] = useState(() => localStorage.getItem('productSubtitle') || '');
+  const [skinTone, setSkinTone] = useState(() => localStorage.getItem('skinTone') || '');
+  const [facialFeatures, setFacialFeatures] = useState(() => localStorage.getItem('facialFeatures') || '');
+  const [hair, setHair] = useState(() => localStorage.getItem('hair') || '');
+  const [bodyType, setBodyType] = useState(() => localStorage.getItem('bodyType') || '');
+  const [ethnicity, setEthnicity] = useState(() => localStorage.getItem('ethnicity') || '');
+  const [expression, setExpression] = useState(() => localStorage.getItem('expression') || '');
+  const [age, setAge] = useState(() => localStorage.getItem('age') || '');
+  const [position, setPosition] = useState(() => localStorage.getItem('position') || '');
+  const [scenery, setScenery] = useState(() => localStorage.getItem('scenery') || '');
+  const [productDescriptionCtx, setProductDescriptionCtx] = useState(() => localStorage.getItem('productDescriptionCtx') || '');
+  const [style, setStyle] = useState(() => localStorage.getItem('style') || '');
+  const [selectedStylePresets, setSelectedStylePresets] = useState<string[]>(() => JSON.parse(localStorage.getItem('selectedStylePresets') || '[]'));
+  const [typography, setTypography] = useState(() => localStorage.getItem('typography') || 'sin texto');
+
   const [selectedTypographyPresets, setSelectedTypographyPresets] = useState<string[]>(() => JSON.parse(localStorage.getItem('selectedTypographyPresets') || '[]'));
   const [favoriteStyles, setFavoriteStyles] = useState<string[]>(() => JSON.parse(localStorage.getItem('favoriteStyles') || '[]'));
   const [activeModalAngle, setActiveModalAngle] = useState<any>(null);
