@@ -744,9 +744,12 @@ Context: ${productDescriptionCtx}`;
                 )}
               </button>
               <button
-                onClick={handleGenerateVideo}
+                onClick={() => {
+                  playClickSound();
+                  handleGenerateVideo();
+                }}
                 disabled={isGenerating}
-                className="flex-1 bg-gray-700 text-white border-none p-[15px] font-bold text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition opacity-90 hover:opacity-100 disabled:opacity-50"
+                className="flex-1 bg-gray-700 text-white border-none p-[15px] font-bold text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition opacity-90 hover:opacity-100 disabled:opacity-50 active:scale-95"
               >
                 <span>Generar Vídeo Prompt (Veo)</span>
               </button>
@@ -755,11 +758,11 @@ Context: ${productDescriptionCtx}`;
                 <>
                   <button
                     onClick={copyToClipboard}
-                    className="flex-[0.5] bg-[#222] text-white border border-[#333] p-[15px] text-[12px] uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition hover:bg-[#333] font-bold"
+                    className="flex-1 bg-theme-accent text-white border-none p-[15px] text-xs font-bold uppercase tracking-[2px] cursor-pointer flex items-center justify-center space-x-2 transition hover:opacity-90 active:scale-95"
                     title="Copiar al portapapeles"
                   >
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    <span className="hidden sm:inline">{copied ? 'Copiado' : 'Copiar'}</span>
+                    {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                    <span>{copied ? '¡Copiado!' : 'Copiar Prompt'}</span>
                   </button>
                   <button
                     onClick={handleExport}
@@ -797,9 +800,9 @@ Context: ${productDescriptionCtx}`;
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                   }}
-                  className="ml-3 px-2 py-0.5 bg-[#ffbd2e] text-black text-[9px] font-bold uppercase tracking-[1px] rounded hover:bg-[#ffbd2e]/90 transition px-2"
+                  className="ml-3 px-4 py-1.5 bg-theme-accent text-white text-[10px] font-bold uppercase tracking-[1px] rounded hover:opacity-90 transition active:scale-95"
                  >
-                   {copied ? 'Copiado!' : 'Copiar'}
+                   {copied ? '¡Copiado!' : 'Copiar Prompt'}
                  </button>
               </span>
             </div>
@@ -848,7 +851,7 @@ Context: ${productDescriptionCtx}`;
                         setVideoCopied(true);
                         setTimeout(() => setVideoCopied(false), 2000);
                     }}
-                    className="px-2 py-1 bg-[#222] text-white text-[9px] font-bold uppercase tracking-[1px] rounded hover:bg-[#333] transition"
+                    className="px-4 py-1.5 bg-theme-accent text-white text-[10px] font-bold uppercase tracking-[1px] rounded transition hover:opacity-90 active:scale-95"
                   >
                     {videoCopied ? 'Copiado!' : 'Copiar Vídeo Prompt'}
                   </button>
