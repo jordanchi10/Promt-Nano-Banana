@@ -3,7 +3,8 @@ import {
   Sparkles, Copy, Check, Loader2, ArrowRight, Clock, ChevronDown,
   Award, Camera, Smartphone, ZoomIn, Scale, ArrowRightLeft, 
   ThumbsUp, Flame, Network, Key, LayoutGrid, PackageOpen, 
-  Hammer, Zap, Sun, FileDown, Trash2, Heart, RefreshCcw, HelpCircle, X
+  Hammer, Zap, Sun, FileDown, Trash2, Heart, RefreshCcw, HelpCircle, X, Image,
+  MessageSquareWarning, Target, BookOpen, ShieldAlert, HeartPulse, Utensils, Droplets
 } from 'lucide-react';
 import { playClickSound } from './lib/audio';
 
@@ -33,6 +34,17 @@ const ANGLES = [
   { id: 'detras_escena', icon: Hammer, label: 'Detrás de Escena (Craftsmanship)', description: 'Humanizamos la marca mostrando la artesanía. Un vistazo al taller, a las manos que crean o al proceso de trabajo, transmitiendo calidad y dedicación real.', type: 'Ambos' },
   { id: 'problema_agitado', icon: Zap, label: 'Agitar el Problema', description: 'No vendemos una solución sin antes entender el dolor. Mostramos la frustración de forma dramática para que la aparición de tu producto sea el alivio esperado.', type: 'Ambos' },
   { id: 'climax_alivio', icon: Sun, label: 'Clímax y Alivio', description: 'El momento posterior a la calma. Capturamos la expresión de alivio y felicidad total cuando el problema desaparece, gracias a tu producto.', type: 'Ambos' },
+  { id: 'authority_mentor', icon: Award, label: 'Mentoría / Autoridad', description: 'Te posicionas como el guía que ayuda al usuario a llegar a su objetivo. Demuestras tu experiencia resolviendo retos complejos con sabiduría.', type: 'Ambos' },
+  { id: 'authenticity_daily', icon: Smartphone, label: 'Día a Día / Autenticidad', description: 'Humaniza tu marca con momentos reales, sin guion y sin filtros. Fortalece la conexión emocional al mostrarte tal cual eres, sin poses corporativas.', type: 'Ambos' },
+  { id: 'journey_growth', icon: ArrowRight, label: 'Tu Transformación / Viaje', description: 'Muestra tu progreso. De dónde venías a dónde estás hoy. Esto prueba que el cambio es posible y posiciona tu marca como un faro de esperanza.', type: 'Ambos' },
+  { id: 'bold_opinion', icon: MessageSquareWarning, label: 'Rompiendo Mitos', description: 'Cuestiona las normas de tu industria. Di la verdad incómoda que nadie quiere admitir. Es el ángulo perfecto para establecer liderazgo de opinión.', type: 'Ambos' },
+  { id: 'mission_purpose', icon: Target, label: 'El "Por Qué" (Propósito)', description: 'Conecta a tu audiencia con tus valores fundamentales. No se trata de qué haces, sino de por qué lo haces. Crea tribus y seguidores leales.', type: 'Ambos' },
+  { id: 'health_translator', icon: BookOpen, label: 'El Traductor de Ciencia', description: 'Tomas conceptos médicos o fisiológicos complejos y los traduces a lenguaje sencillo, práctico y accionable. Empoderas al paciente explicándole el "porqué" de su salud.', type: 'Ambos' },
+  { id: 'health_mythbuster', icon: ShieldAlert, label: 'El Desmitificador', description: 'Desmontas mitos populares de salud, dietas milagro o tratamientos sin base científica. Construyes autoridad protegiendo a tu audiencia de desinformación peligrosa.', type: 'Ambos' },
+  { id: 'patient_journey', icon: HeartPulse, label: 'Caso Clínico Humano', description: 'Enfocado en la transformación de vida más allá del diagnóstico. Muestras la mejora tangible en la calidad de vida, conectando salud y bienestar emocional.', type: 'Ambos' },
+  { id: 'food_sensorial', icon: Utensils, label: 'Sensorial & Antojo (Craving)', description: 'Primeros planos extremos que destacan texturas, humeantes, ingredientes frescos y detalles que despiertan el hambre emocional. Esencial para captar la atención en el feed.', type: 'Producto' },
+  { id: 'fastfood_messy', icon: Droplets, label: 'Realismo Irresistible (The Sauce Shot)', description: 'En la comida rápida, el desorden es un activo. Capturamos la salsa goteando, el queso estirándose o el ingrediente desbordándose. Estimulación visual directa que rompe la frialdad de una foto perfecta.', type: 'Producto' },
+  { id: 'fastfood_dynamic', icon: Clock, label: 'Ritmo Dinámico (On-the-Go/Lifestyle)', description: 'Posiciona la comida rápida como combustible esencial de una vida a mil por hora. Producto en contextos activos: en la mano mientras caminas, en el coche o en un break rápido. Vendes tiempo y agilidad.', type: 'Ambos' },
 ];
 
 const STYLE_PRESETS = [
@@ -62,6 +74,34 @@ const STYLE_PRESETS = [
   { label: 'Lifestyle Servicios', value: 'Dynamic storytelling, real-world application of service, bright natural lighting, authentic human interaction, professional but approachable', description: 'Captura el servicio en acción con un estilo auténtico y dinámico.' },
   { label: 'Foto Estudio Personal', value: 'Classic studio portrait, solid neutral backdrop, precise lighting, timeless composition, focus on facial clarity, professional retouching aesthetic', description: 'Retrato de estudio personal, clásico, atemporal y pulido.' }
 ];
+
+const STYLE_TRANSLATIONS: Record<string, string> = {
+  'Cinematográfico': 'Cinematic',
+  'Minimalista': 'Minimalist',
+  'Vibrante / Pop': 'Vibrant / Pop',
+  'Editorial / Vogue': 'Editorial / Vogue',
+  'Glow Oscuro': 'Dark Glow',
+  'Aesthetic Natural': 'Natural Aesthetic',
+  'Estudio Brillante': 'Bright Studio',
+  'Granular Analógico': 'Analog Granular',
+  'Humo y Sombras': 'Smoke & Shadows',
+  'Arquitectura Brutalista': 'Brutalist Arch',
+  '3D Renderizado Suave': 'Soft 3D',
+  'Sostenible / ECO': 'Sustainable / ECO',
+  'Bohemio Chic': 'Bohemian Chic',
+  'Soft Glam': 'Soft Glam',
+  'Vintage Polaroid': 'Vintage Polaroid',
+  'Zen / Japandi': 'Zen / Japandi',
+  'Noir Contemporáneo': 'Contemporary Noir',
+  'Clínico Premium': 'Premium Clinical',
+  'Gastronómico Gourmet': 'Gourmet Gastronomic',
+  'Retrato Ejecutivo': 'Executive Portrait',
+  'Hotel Boutique / Lujo': 'Boutique Hotel / Luxury',
+  'Minimalismo Médico': 'Medical Minimalism',
+  'Culinary Artisan': 'Culinary Artisan',
+  'Lifestyle Servicios': 'Lifestyle Services',
+  'Foto Estudio Personal': 'Personal Studio Photo'
+};
 
 const TYPOGRAPHY_PRESETS = [
   { label: 'Gigante y Gruesa', value: 'Massive Modern Grotesk bold sans-serif, screen-filling typography' },
@@ -176,7 +216,9 @@ export default function App() {
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const [generatedPromptTranslation, setGeneratedPromptTranslation] = useState('');
   const [generatedVideoPrompt, setGeneratedVideoPrompt] = useState('');
+  const [generatedVideoPromptTranslation, setGeneratedVideoPromptTranslation] = useState('');
   const [voiceOver, setVoiceOver] = useState(() => localStorage.getItem('voiceOver') || '');
   const [videoScene, setVideoScene] = useState(() => localStorage.getItem('videoScene') || '');
   const [copied, setCopied] = useState(false);
@@ -227,10 +269,10 @@ export default function App() {
     const protagonistDetails = [age, skinTone, ethnicity, bodyType, hair, expression, position, facialFeatures].filter(Boolean).join(', ');
     const prompt = `Professional digital advertisement ${productTitle ? `for a ${productTitle} ${productSubtitle}` : `showcasing a professional product/service`}. 
     
-    ${protagonistDetails ? `Protagonista: ${protagonistDetails}.` : ''}
-    ${scenery ? `Escenario: ${scenery}.` : ''}
+    ${protagonistDetails ? `Protagonist: ${protagonistDetails}.` : ''}
+    ${scenery ? `Scenery: ${scenery}.` : ''}
     
-    Composition Strategy: ${selectedAngle?.label || angle} shot. ${selectedAngle?.description || ''}
+    Composition Strategy: ${selectedAngle?.id || angle} shot.
 Visual Style & Environment: ${style}
 Typography & Graphic Overlay: ${isNoText ? tOverlay : `text overlay: "${tOverlay}"`}
 
@@ -243,7 +285,27 @@ ${isNoText ? "" : `- IMPORTANT: All text overlay elements must be rendered in Sp
 
 Context: ${productDescriptionCtx}`;
 
+    const translation = `===== TRADUCCIÓN / ESTRUCTURA =====
+    
+Anuncio digital profesional ${productTitle ? `para un/a ${productTitle} ${productSubtitle}` : `mostrando un producto/servicio profesional`}. 
+
+${protagonistDetails ? `Protagonista: ${protagonistDetails}.` : ''}
+${scenery ? `Escenario: ${scenery}.` : ''}
+
+Estrategia de Composición: Plano tipo ${selectedAngle?.label || angle}.
+Estilo Visual y Entorno: ${STYLE_PRESETS.find(s => s.value === style)?.label || style}
+Tipografía y Textos: ${isNoText ? "SIN TEXTO" : `Texto superpuesto: "${tOverlay}"`}
+
+Especificaciones Técnicas:
+- Diseño orientado a alta conversión en redes sociales.
+- Calidad de imagen hiperdetallada con iluminación y texturas profesionales.
+- Jerarquía visual clara con espacio negativo p/ Call to Action.
+- Optimizado para alto impacto visual y branding de marca.
+
+Contexto Adicional: ${productDescriptionCtx || "No especificado."}`;
+
     setGeneratedPrompt(prompt);
+    setGeneratedPromptTranslation(translation);
     setActiveTab('current');
     
     const newHistoryItem: HistoryItem = {
@@ -272,7 +334,48 @@ Context: ${productDescriptionCtx}`;
     const protagonistDetails = [age, skinTone, ethnicity, bodyType, hair, expression, position, facialFeatures].filter(Boolean).join(', ');
     
     // Construct prompt for Veo 3.1 Pro in Spanish with structured blocks
-    const prompt = `Guion Cinematográfico para Vídeo (Veo 3.1 Pro):
+    const prompt = `Cinematic Video Script (optimized for Veo 3.1 Pro / Sora):
+
+### 1. Product Context
+- Context: ${productDescriptionCtx || 'High-end promotional video.'}
+- Product: ${productTitle || 'Product'} - ${productSubtitle || ''}
+
+### 2. Subject & Action Details
+- Protagonist(s): ${protagonistDetails || 'Not specified.'}
+- Posture/Position: ${position || 'Not specified.'}
+- Expression: ${expression || 'Not specified.'}
+- Motion Action: ${VEO_SCENE_DESCRIPTIONS[videoScene] || videoScene || 'Generic smooth motion.'}
+
+### 3. Scenic Configuration
+- Environment: ${scenery || 'Professional studio'}
+- Lighting: ${style}
+
+### 4. Cinematography & Style
+- Camera Angle: ${selectedAngle?.id || angle} shot
+- Visual Style: ${style}
+
+---
+
+### 5. Scene Chronology
+
+[00s - 02s] Initial framing: ${selectedAngle?.id || angle} view. Establishing shot showing ${protagonistDetails.split(', ')[0] || 'the subject'} interacting with ${productTitle}. Action: ${VEO_SCENE_DESCRIPTIONS[videoScene] || videoScene || 'Starting action'}.
+
+[02s - 05s] Action development: ${protagonistDetails} in motion. Fluid camera movement tracking the subject. Aesthetic: ${style}.
+
+[05s - 08s] Resolution: Detailed product focus with integrated typography/text overlay: "${typography || 'clean minimalist aesthetic'}".
+
+---
+
+### 6. Audio & Voice (Voiceover)
+- Voiceover Script: ${voiceOver ? `"${voiceOver}"` : 'No voice (ambient/musical video).'}
+
+### 7. Technical Specifications
+- High quality, hyper-realistic, 4k resolution, fluid motion, photorealistic lighting, professional color grading.
+- Film format.`;
+
+    const translation = `===== TRADUCCIÓN / ESTRUCTURA DE GUION =====
+    
+Guion Cinematográfico para Vídeo (Veo 3.1 Pro):
 
 ### 1. Contexto del Producto
 - Contexto: ${productDescriptionCtx || 'Vídeo promocional de alta calidad.'}
@@ -286,32 +389,29 @@ Context: ${productDescriptionCtx}`;
 
 ### 3. Configuración Escénica
 - Entorno: ${scenery || 'Estudio profesional'}
-- Iluminación: ${style.includes('luz') ? style : style + ', luz cinematográfica'}
+- Estilo Visual: ${STYLE_PRESETS.find(s => s.value === style)?.label || style}
 
 ### 4. Cinematografía y Estilo
-- Ángulo: ${selectedAngle?.label || angle}
-- Estilo Visual: ${style}
+- Ángulo principal: ${selectedAngle?.label || angle}
 
 ---
 
 ### 5. Cronología de Escenas
 
-[00s - 02s] Encuadre inicial: ${selectedAngle?.label || angle} shot. Plano general mostrando a ${protagonistDetails.split(', ')[0] || 'el sujeto'} interactuando con ${productTitle}. Escena: ${videoScene || 'Acción inicial'}.
-
-[02s - 05s] Desarrollo de acción: Se observa ${protagonistDetails}. Movimiento de cámara fluido, estilo visual: ${style}.
-
-[05s - 08s] Cierre: Enfoque detallado en el producto con tipografía integrada: ${typography || 'limpio/minimalista'}. 
+[00s - 02s] Encuadre inicial: Plano general mostrando a ${protagonistDetails.split(', ')[0] || 'el sujeto'} con el producto.
+[02s - 05s] Desarrollo: Movimiento fluido de cámara capturando la acción.
+[05s - 08s] Cierre: Enfoque en el producto (Textos: ${typography || 'limpio/minimalista'}). 
 
 ---
 
 ### 6. Audio y Voz (Voiceover)
-- Guion de voz: ${voiceOver ? `"${voiceOver}"` : 'Sin voz (Vídeo musical/ambiente).'}
+- Guion sugerido: ${voiceOver ? `"${voiceOver}"` : 'Sin voz (Vídeo musical/ambiente).'}
 
 ### 7. Especificaciones Técnicas
-- Alta calidad, hiperrealista, 4k, movimiento fluido, iluminación fotorrealista, gradación de color profesional.
-- Veo 3.1 Pro - Formato: Cine.`;
+- Alta calidad, hiperrealista, 4k, movimiento fluido, gradación de color profesional.`;
 
     setGeneratedVideoPrompt(prompt);
+    setGeneratedVideoPromptTranslation(translation);
     setActiveTab('current');
   };
 
@@ -375,9 +475,10 @@ Context: ${productDescriptionCtx}`;
               <span className="w-2 h-2 rounded-full bg-black animate-pulse mr-2"></span>
               1) Ángulo de Venta
             </span>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {ANGLES.map(a => {
                 const Icon = a.icon;
+                const isSelected = angle === a.label;
                 return (
                   <button
                     key={a.id}
@@ -385,17 +486,25 @@ Context: ${productDescriptionCtx}`;
                         playClickSound();
                         setAngle(a.label);
                     }}
-                    title={a.description}
-                    className={`relative p-4 text-xs border flex flex-col items-center justify-center space-y-2 cursor-pointer transition ${angle === a.label ? 'bg-theme-ink text-theme-bg border-theme-ink shadow-sm' : 'bg-transparent text-theme-ink border-[#ccc] hover:bg-black/5'}`}
+                    className={`group relative p-5 border rounded-2xl flex flex-col items-start text-left transition-all duration-300 ${isSelected 
+                      ? 'bg-theme-ink text-white border-theme-ink shadow-lg scale-[1.02]' 
+                      : 'bg-white text-theme-ink border-gray-200 hover:border-theme-accent hover:shadow-md'}`}
                   >
-                    <div 
-                      onClick={(e) => { e.stopPropagation(); setActiveModalAngle(a); }}
-                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-black cursor-pointer"
-                    >
-                      <HelpCircle size={14} />
+                    <div className="flex justify-between w-full items-start mb-3">
+                      <div className={`p-2 rounded-xl transition ${isSelected ? 'bg-white/10' : 'bg-gray-100 group-hover:bg-theme-accent/10'}`}>
+                        <Icon className={`w-6 h-6 ${isSelected ? 'text-theme-accent' : 'text-theme-ink'}`} />
+                      </div>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); setActiveModalAngle(a); }}
+                        className="text-gray-400 hover:text-theme-accent bg-gray-100 p-1.5 rounded-full cursor-pointer transition hover:bg-theme-accent/10 border border-gray-200"
+                      >
+                        <Image size={14} />
+                      </div>
                     </div>
-                    <Icon className={`w-6 h-6 ${angle === a.label ? 'opacity-100 text-theme-accent' : 'opacity-60 text-theme-ink'}`} />
-                    <span className="text-center font-medium">[ {a.label} ]</span>
+                    <span className="font-bold text-sm mb-1">{a.label}</span>
+                    <span className={`text-[10px] leading-relaxed line-clamp-2 ${isSelected ? 'text-gray-300' : 'text-gray-500'}`}>
+                      {a.description}
+                    </span>
                   </button>
                 );
               })}
@@ -429,8 +538,10 @@ Context: ${productDescriptionCtx}`;
                     <Heart size={10} className={favoriteStyles.includes(preset.label) ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
                   </button>
                   <button
+                    // When clicking a style, we need to handle the Spanish to English mapping
                     onClick={() => {
                         playClickSound();
+                        const englishValue = STYLE_TRANSLATIONS[preset.label] || preset.label;
                         if (selectedStylePresets.includes(preset.label)) {
                           setSelectedStylePresets(prev => prev.filter(l => l !== preset.label));
                           setStyle(prev => prev.replace(new RegExp(`(, )?${preset.value}`, 'g'), '').replace(/^, /, ''));
@@ -835,18 +946,31 @@ Context: ${productDescriptionCtx}`;
                  text overlay: "{typography || '[Tipografía y Textos]'}"
               </span>
               {' '}
-              
-              {/* Params */}
-              <span className="text-[#555] bg-[#1a1a1a] px-1.5 py-0.5 rounded">
-                 --v 6.0 --ar 4:5 --style raw
-              </span>
             </div>
+            
+            {generatedPrompt && (
+              <div className="font-mono text-[11.5px] leading-[2] break-words text-[#aaa] bg-[#1a1a1a] p-4 rounded-md border border-[#333] mt-4 mb-4 whitespace-pre-wrap">
+                 <div className="flex justify-between items-center mb-2 border-b border-[#333] pb-2">
+                   <span className="text-white font-bold">Prompt Final (Inglés):</span>
+                 </div>
+                 {generatedPrompt}
+              </div>
+            )}
+            
+            {generatedPromptTranslation && (
+              <div className="font-sans text-[12px] leading-relaxed break-words text-gray-300 bg-[#222] p-4 rounded-md border border-theme-accent/20 mb-4 whitespace-pre-wrap">
+                 <div className="flex items-center mb-2">
+                   <span className="text-theme-accent font-bold uppercase tracking-wider text-[10px]">Traducción Automática (Español):</span>
+                 </div>
+                 {generatedPromptTranslation}
+              </div>
+            )}
             
             {/* Display generated video prompt */}
             {generatedVideoPrompt && (
-              <div className="font-mono text-[11.5px] leading-[2] break-words text-[#8ab4f8] bg-[#1a2b3c] p-4 rounded-md border border-[#1a2b3c] mt-4">
-                 <div className="flex justify-between items-center mb-2">
-                   <span className="text-white font-bold">Veo 3.1 Pro Video Prompt:</span>
+              <div className="font-mono text-[11.5px] leading-[2] break-words text-[#8ab4f8] bg-[#0c1622] p-4 rounded-md border border-[#1a2b3c] mt-4 mb-4 whitespace-pre-wrap">
+                 <div className="flex justify-between items-center mb-2 border-b border-[#1a2b3c] pb-2">
+                   <span className="text-white font-bold">Veo 3.1 Pro Video Prompt (Inglés):</span>
                    <button
                     onClick={async () => {
                         await navigator.clipboard.writeText(generatedVideoPrompt);
@@ -855,10 +979,19 @@ Context: ${productDescriptionCtx}`;
                     }}
                     className="px-4 py-1.5 bg-theme-accent text-white text-[10px] font-bold uppercase tracking-[1px] rounded transition hover:opacity-90 active:scale-95"
                   >
-                    {videoCopied ? 'Copiado!' : 'Copiar Vídeo Prompt'}
+                    {videoCopied ? '¡Copiado!' : 'Copiar Vídeo Prompt'}
                   </button>
                  </div>
                  {generatedVideoPrompt}
+              </div>
+            )}
+
+            {generatedVideoPromptTranslation && (
+              <div className="font-sans text-[12px] leading-relaxed break-words text-blue-200 bg-[#16273b] p-4 rounded-md border border-blue-500/20 mb-4 whitespace-pre-wrap">
+                 <div className="flex items-center mb-2">
+                   <span className="text-blue-400 font-bold uppercase tracking-wider text-[10px]">Traducción Automática (Español):</span>
+                 </div>
+                 {generatedVideoPromptTranslation}
               </div>
             )}
 
