@@ -532,7 +532,7 @@ Guion Cinematográfico para Vídeo (Veo 3.1 Pro):
                         </div>
                     )}
                     <span className="font-bold text-sm mb-1">{a.label}</span>
-                    <span className={`text-[10px] leading-relaxed line-clamp-2 ${isSelected ? 'text-gray-300' : 'text-gray-500'}`}>
+                    <span className={`text-[14px] leading-relaxed line-clamp-3 ${isSelected ? 'text-gray-300' : 'text-gray-500'}`}>
                       {a.description}
                     </span>
                   </button>
