@@ -103,6 +103,21 @@ const STYLE_TRANSLATIONS: Record<string, string> = {
   'Foto Estudio Personal': 'Personal Studio Photo'
 };
 
+const ANGLE_IMAGES: Record<string, string> = {
+  'hero': 'https://lh3.googleusercontent.com/d/1pKt5BZ5fsRIKv5-l5iyb7uWTWgQWZIIb=w700',
+  'lifestyle_premium': 'https://lh3.googleusercontent.com/d/1mqhYsgiEfZUUs-7ROMW3Y0kfodO8woGE=w700',
+  'ugc_organico': 'https://lh3.googleusercontent.com/d/1JwM00ZShFM8p501eaSJ1ZOZ6ar-R6jmH=w700',
+  'macro_sensorial': 'https://lh3.googleusercontent.com/d/1LJUgsz5FX-13BEhGpRUCZBHAmv6CVKT3=w700',
+  'nosotros_vs_ellos': 'https://lh3.googleusercontent.com/d/1OKWkN6ndUSprdEMTahRrsuONVd1iSyv8=w700',
+  'antes_despues': 'https://lh3.googleusercontent.com/d/1qkE8NfVVEVqdMQBeDerogdgeFaFobOuy=w700',
+  'prueba_social': 'https://lh3.googleusercontent.com/d/1rWP1nnRBE3KtA91B7HISTgLI70FHbXni=w700',
+  'urgencia_escasez': 'https://lh3.googleusercontent.com/d/1gxzdm92lDUxFs5LRguAF54RbGe8mfXYJ=w700',
+  'anatomia_infografia': 'https://lh3.googleusercontent.com/d/1xKa-ICZSSzqFyg51Uvnz7VncRhwlrKbU=w700',
+  'secreto_revelado': 'https://lh3.googleusercontent.com/d/1wDTPqhHKVFlinyvDzolvY87iD13pwlWt=w700',
+  'flatlay_estetico': 'https://lh3.googleusercontent.com/d/1T58ZgNOfDTeOMc5N8uKCZijXGkSa_RjW=w700',
+  'unboxing_experiencia': 'https://lh3.googleusercontent.com/d/1YLshzsGWLSIHZesQ5uNGf23BhNdXmUck=w700',
+};
+
 const TYPOGRAPHY_PRESETS = [
   { label: 'Gigante y Gruesa', value: 'Massive Modern Grotesk bold sans-serif, screen-filling typography' },
   { label: 'Lujo / Serif', value: 'Elegant Serif high-end font, gold foil texture, lavish' },
@@ -491,16 +506,31 @@ Guion Cinematográfico para Vídeo (Veo 3.1 Pro):
                       : 'bg-white text-theme-ink border-gray-200 hover:border-theme-accent hover:shadow-md'}`}
                   >
                     <div className="flex justify-between w-full items-start mb-3">
-                      <div className={`p-2 rounded-xl transition ${isSelected ? 'bg-white/10' : 'bg-gray-100 group-hover:bg-theme-accent/10'}`}>
-                        <Icon className={`w-6 h-6 ${isSelected ? 'text-theme-accent' : 'text-theme-ink'}`} />
-                      </div>
-                      <div 
-                        onClick={(e) => { e.stopPropagation(); setActiveModalAngle(a); }}
-                        className="text-gray-400 hover:text-theme-accent bg-gray-100 p-1.5 rounded-full cursor-pointer transition hover:bg-theme-accent/10 border border-gray-200"
-                      >
-                        <Image size={14} />
-                      </div>
+                      {!ANGLE_IMAGES[a.id] && (
+                        <div className={`p-2 rounded-xl transition ${isSelected ? 'bg-white/10' : 'bg-gray-100 group-hover:bg-theme-accent/10'}`}>
+                          <Icon className={`w-6 h-6 ${isSelected ? 'text-theme-accent' : 'text-theme-ink'}`} />
+                        </div>
+                      )}
+                      {!ANGLE_IMAGES[a.id] && (
+                        <div 
+                          onClick={(e) => { e.stopPropagation(); setActiveModalAngle(a); }}
+                          className="text-gray-400 hover:text-theme-accent bg-gray-100 p-1.5 rounded-full cursor-pointer transition hover:bg-theme-accent/10 border border-gray-200"
+                        >
+                          <Image size={14} />
+                        </div>
+                      )}
                     </div>
+                    {ANGLE_IMAGES[a.id] && (
+                        <div 
+                          className="mb-2 w-full aspect-[4/3] overflow-hidden rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveModalAngle(a);
+                          }}
+                        >
+                          <img src={ANGLE_IMAGES[a.id]} alt={a.label} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
+                    )}
                     <span className="font-bold text-sm mb-1">{a.label}</span>
                     <span className={`text-[10px] leading-relaxed line-clamp-2 ${isSelected ? 'text-gray-300' : 'text-gray-500'}`}>
                       {a.description}
@@ -1174,6 +1204,14 @@ Guion Cinematográfico para Vídeo (Veo 3.1 Pro):
               <h3 className="font-bold text-lg">{activeModalAngle.label}</h3>
               <button className="text-gray-500 hover:text-black p-1" onClick={() => setActiveModalAngle(null)}><X size={20}/></button>
             </div>
+            {ANGLE_IMAGES[activeModalAngle.id] && (
+              <img 
+                src={ANGLE_IMAGES[activeModalAngle.id]} 
+                alt={activeModalAngle.label} 
+                className="w-full rounded-lg shadow-sm"
+                referrerPolicy="no-referrer"
+              />
+            )}
             <p className="text-sm text-gray-700 leading-relaxed">{activeModalAngle.description}</p>
           </div>
         </div>
