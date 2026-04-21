@@ -725,10 +725,10 @@ Guion Cinematográfico para Vídeo (Veo 3.1 Pro):
               })}
             </div>
             <textarea
-              placeholder="Descripción principal del Producto o Servicio (para el promt)"
+              placeholder="IMPORTANTE: Describe que es el Producto o Servicio (para el promt final)"
               value={productDescriptionCtx}
               onChange={(e) => setProductDescriptionCtx(e.target.value)}
-              className="w-full h-20 p-3 border border-dashed border-[#ccc] text-sm text-[#444] bg-transparent outline-none focus:border-theme-ink placeholder-[#aaa] resize-none"
+              className="w-full h-24 p-4 border-2 border-theme-accent rounded-xl bg-white text-sm text-gray-800 font-bold outline-none focus:border-theme-accent focus:ring-4 focus:ring-theme-accent/10 placeholder-gray-400 resize-none shadow-md"
             />
           </div>
 
